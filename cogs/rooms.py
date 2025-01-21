@@ -13,6 +13,61 @@ CREATE_PRIVATE_ROOM = 1331265751788818433 # Войс для создания п�
 class CreateRoomView(discord.ui.View):
     
     def __init__(self, timeout = None, disable_on_timeout: bool = False):
+        
+        super().__init__(self._AgreeButton(),
+                         self._DisagreeButton(),
+                         timeout=timeout, 
+                         disable_on_timeout=disable_on_timeout)
+        
+    class _AgreeButton(discord.ui.Button):
+        
+        async def callback(self, interaction: discord.Interaction):
+            
+            await interaction.response.defer()
+            
+            await interaction.message.edit(view=CreateProcessView(), embeds=get_embeds("private/create/process"))
+            
+            
+        def __init__(self):
+            
+            super().__init__(style=discord.ButtonStyle.green, 
+                             label='Я согласен!', 
+                             disabled=False, 
+                             row=1)
+            
+    class _DisagreeButton(discord.ui.Button):
+        
+        async def callback(self, interaction: discord.Interaction): 
+            await interaction.response.defer()
+            await interaction.message.delete()
+            
+        def __init__(self):
+            
+            super().__init__(style=discord.ButtonStyle.red, 
+                             label='Отмена!', 
+                             disabled=False, 
+                             row=1)
+
+class CreateProcessView(discord.ui.View):
+    
+    class _CreationProcessModal(discord.ui.Modal):
+        
+        async def callback(self, interaction: discord.Interaction):
+            
+            
+            
+            return self.children[0].value
+    
+        def __init__(self, custom_id = None, timeout = None) -> None:
+            super().__init__(*[discord.ui.InputText(style=discord.InputTextStyle.short, 
+                                                    label='Название приватки'),
+                               discord.ui.InputText(style=discord.InputTextStyle.singleline, 
+                                                    label='Ссылка на картинку'),
+                               discord.ui.InputText(style=discord.InputTextStyle.short, 
+                                                    label='Цвет в HEX')], 
+                             title='Создание приватки')
+    
+    def __init__(self, timeout = None, disable_on_timeout: bool = False):
         super().__init__(timeout=timeout, 
                          disable_on_timeout=disable_on_timeout)
         
@@ -21,8 +76,6 @@ class RoomsCog(discord.Cog):
     def __init__(self, bot: discord.Bot):
         
         self.bot: discord.Bot = bot
-        
-        self.session = get_async_session()
         
         super().__init__()
     
