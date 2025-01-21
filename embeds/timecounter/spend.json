@@ -1,0 +1,17 @@
+{
+    "embeds": [
+        {
+            "author": {
+                "name": "Количество убитого времени"
+            },
+            "title": "%user_name%",
+            "description": "Вы провели %time_spended_str%",
+            "thumbnail": {
+                "url": "%member_img_url%"
+            },
+            "footer": {
+                "text": "Последний чек-ап"
+            }
+        }
+    ]
+}
