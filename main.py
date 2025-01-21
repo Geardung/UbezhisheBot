@@ -18,8 +18,9 @@ if __name__ == "__main__":
         # TODO Заполнять Коги сюда
         from cogs.timecounter import TimeCounterCog
         from cogs.initial import InitialCog
+        from cogs.rooms import RoomsCog
         
-        for cog in [TimeCounterCog, InitialCog]: bot.add_cog(cog(bot))
+        for cog in [TimeCounterCog, InitialCog, RoomsCog]: bot.add_cog(cog(bot))
     
     
     

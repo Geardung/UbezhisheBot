@@ -15,8 +15,6 @@ class TimeCounterCog(discord.Cog):
         
         self.parsing_loop.start()
         
-        self.session = get_async_session()
-        
         super().__init__()
     
     
@@ -161,9 +159,11 @@ class TimeCounterCog(discord.Cog):
         
         if member.bot: return
         
+        session = get_async_session()
+        
         if before.channel and ( not after.channel ): # Чел вышел из войса
             
-            self.session.add(TimeCounterLog(user_id=member.id,
+            session.add(TimeCounterLog(user_id=member.id,
                                             log_type=VoiceLogTypeENUM.exit,
                                             channel_id=before.channel.id))
             
@@ -171,17 +171,18 @@ class TimeCounterCog(discord.Cog):
             
             if after.channel.id == 1314291685538271333: return # Проверка на AFK канал
             
-            self.session.add(TimeCounterLog(user_id=member.id,
+            session.add(TimeCounterLog(user_id=member.id,
                                             log_type=VoiceLogTypeENUM.enter,
                                             channel_id=after.channel.id))
             
         elif before.channel and after.channel: # Чел из одного в другой войс
             
-            self.session.add_all([TimeCounterLog(user_id=member.id,
+            session.add_all([TimeCounterLog(user_id=member.id,
                                             log_type=VoiceLogTypeENUM.exit,
                                             channel_id=before.channel.id),
                                  TimeCounterLog(user_id=member.id,
                                             log_type=VoiceLogTypeENUM.enter,
                                             channel_id=after.channel.id)])
         
-        await self.session.commit()
+        await session.commit()
+        await session.close()
