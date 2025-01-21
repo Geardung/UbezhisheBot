@@ -43,7 +43,7 @@ class RoomsCog(discord.Cog):
                                     before: discord.VoiceState,
                                     after: discord.VoiceState):
         
-        if after.channel.id == CREATE_PRIVATE_ROOM: # Если чел зашёл в войс для создания приватки
+        if after and after.channel.id == CREATE_PRIVATE_ROOM: # Если чел зашёл в войс для создания приватки
                         
             session = get_async_session()
             
