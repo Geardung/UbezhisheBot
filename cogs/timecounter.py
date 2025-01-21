@@ -11,11 +11,11 @@ class TimeCounterCog(discord.Cog):
     
     def __init__(self, bot: discord.Bot):
         
-        self.session = get_async_session()
-        
         self.bot: discord.Bot = bot
         
         self.parsing_loop.start()
+        
+        self.session = get_async_session()
         
         super().__init__()
     
@@ -96,7 +96,8 @@ class TimeCounterCog(discord.Cog):
     
     @time_spend_subgroup.command(name="parse") # Команда для ручного запуска парсинга времени
     @commands.has_guild_permissions(administrator=True)
-    async def time_spend_parse_command(self, ctx: discord.ApplicationContext ):
+    async def time_spend_parse_command(self, 
+                                       ctx: discord.ApplicationContext ):
         
         await ctx.respond("Делаем парс...", ephemeral=True)
         
@@ -126,8 +127,8 @@ class TimeCounterCog(discord.Cog):
         user.time_spended_summary += count
         
         await session.commit()
+        await session.close()
         
-    
     @time_spend_subgroup.command(name="add") # Вручную добавлять времечко
     @commands.has_guild_permissions(administrator=True)
     async def time_spend_add_command(self, 
@@ -150,10 +151,13 @@ class TimeCounterCog(discord.Cog):
         user.time_spended_summary += count
         
         await session.commit()
-    
+        await session.close()
     
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member:discord.Member, before: Union[None, discord.VoiceState], after: Union[None, discord.VoiceState]):
+    async def on_voice_state_update(self, 
+                                    member:discord.Member, 
+                                    before: Union[None, discord.VoiceState], 
+                                    after: Union[None, discord.VoiceState]):
         
         if member.bot: return
         
