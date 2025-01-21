@@ -97,7 +97,9 @@ class RoomsCog(discord.Cog):
                                     after: discord.VoiceState):
         
         if after and after.channel.id == CREATE_PRIVATE_ROOM: # Если чел зашёл в войс для создания приватки
-                        
+
+            if member.bot: return # Игнорирование ботов.
+            
             session = get_async_session()
             
             private_room = (await session.execute(select(PrivateRoom).where(PrivateRoom.owner_id == member.id))).scalar_one_or_none()
@@ -136,8 +138,10 @@ class RoomsCog(discord.Cog):
             
         elif before: # Если вышел из приватки
             
-            if (before.channel.id != CREATE_PRIVATE_ROOM) and \
-            (not before.channel.members) and (before.channel.category_id == PRIVATE_CATEGORY):
-            
-                await before.channel.delete()
+            try:
+                if (before.channel.id != CREATE_PRIVATE_ROOM) and \
+                (not before.channel.members) and (before.channel.category_id == PRIVATE_CATEGORY):
+                
+                    await before.channel.delete()
+            except: pass
             
