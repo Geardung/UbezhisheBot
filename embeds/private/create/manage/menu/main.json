@@ -1,0 +1,16 @@
+{
+    "embeds": [
+        {
+          "id": 259344051,
+          "description": "Твоя комната: <#%channel_user_id%>\nНазвание: %channel_name%\nЦвет роли: %hex_color_channel%\nВремя существования: %timestamp_all%\nВремя в приватке: %timestamp_online_user%",
+          "fields": [],
+          "title": "Инфа о приватке.",
+          "thumbnail": {
+            "url": "https://i.pinimg.com/236x/42/0a/f3/420af3cc55effc1a279951d675730da1.jpg"
+          },
+          "image": {
+            "url": "https://aomicommunity.ru/api/system/embedLine_690.png?quality=lossless"
+          }
+        }
+      ]
+}

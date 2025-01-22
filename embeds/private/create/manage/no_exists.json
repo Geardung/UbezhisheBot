@@ -1,0 +1,17 @@
+{
+    "content": "",
+    "tts": false,
+    "embeds": [
+      {
+        "id": 259344051,
+        "description": "### Приватка не закреплена за ролью. Создать: `/private create`",
+        "fields": [],
+        "title": "Сорян",
+        "image": {
+          "url": "https://aomicommunity.ru/api/system/embedLine_690.png?quality=lossless"
+        }
+      }
+    ],
+    "components": [],
+    "actions": {}
+  }
