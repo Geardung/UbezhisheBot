@@ -60,16 +60,15 @@ class PrivateRoom(Base):
     
     __tablename__ = "private_room"
     
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True) 
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True) # ID роли 
     
     timestamp_create: Mapped[int] = mapped_column(BigInteger, default=int(datetime.now().timestamp()))
     
     owner_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
-    role_id: Mapped[int] = mapped_column(BigInteger)
-    
-    label: Mapped[str]
-    color: Mapped[str]
-    icon:  Mapped[str]
+
+    label: Mapped[str] = mapped_column(nullable=True)
+    color: Mapped[str] = mapped_column(nullable=True)
+    icon:  Mapped[str] = mapped_column(nullable=True)
 
 class PrivateRoomLog(Base):
     
@@ -79,7 +78,9 @@ class PrivateRoomLog(Base):
     
     room_id: Mapped[int] = mapped_column(ForeignKey("private_room.id", ondelete="CASCADE"))
     
-    action_type: Mapped[PrivateActionTypeENUM]
+    action_type: Mapped[PrivateActionTypeENUM] # Что произошло
+    
+    actor: Mapped[int] = mapped_column(BigInteger) # Кто инициатор
     
     object: Mapped[int] = mapped_column(BigInteger)
     
@@ -90,7 +91,7 @@ class PrivateRoomMember(Base):
     
     __tablename__ = "private_room_member"
     
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True) 
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True) 
     
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE")) # ID пользователя
     

@@ -19,7 +19,7 @@ class TimeCounterCog(discord.Cog):
     
     
     async def parse_time_counters(self):
-                
+        return # Пока-что отключил
         session = get_async_session()
         
         _ = TimeParse()
@@ -85,9 +85,9 @@ class TimeCounterCog(discord.Cog):
         
         await ctx.respond(embeds=get_embeds("timecounter\spend",
                                             [datetime.fromtimestamp(float(timeparse.timestamp_start))],
-                                            user_name=ctx.interaction.user.name, 
+                                            user_name=ctx.interaction.user.nick if not member else member.nick, 
                                             time_spended_str=f"{days} дней {hours} часов {minutes} минут",
-                                            member_img_url=ctx.interaction.user.display_avatar.url,
+                                            member_img_url=ctx.interaction.user.display_avatar.url if not member else member.guild_avatar.url,
                           ))
         
         await session.close()
