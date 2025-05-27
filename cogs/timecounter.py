@@ -19,45 +19,74 @@ class TimeCounterCog(discord.Cog):
     
     
     async def parse_time_counters(self):
-        return # Пока-что отключил
         session = get_async_session()
         
         _ = TimeParse()
-        
         session.add(_)
         await session.commit()
         await session.refresh(_)
         
-        all_time_counters = (await session.execute(select(TimeCounterLog).where(TimeCounterLog.parse_id == None))).scalars().all()
+        # Получаем все необработанные логи
+        all_time_counters = (await session.execute(
+            select(TimeCounterLog)
+            .where(TimeCounterLog.parse_id == None)
+            .order_by(TimeCounterLog.timestamp)
+        )).scalars().all()
         
-        for time_counter in all_time_counters:
-            user = await session.get(User, time_counter.user_id)
+        # Группируем логи по пользователям
+        user_logs = {}
+        for log in all_time_counters:
+            if log.user_id not in user_logs:
+                user_logs[log.user_id] = []
+            user_logs[log.user_id].append(log)
+        
+        # Обрабатываем логи для каждого пользователя
+        for user_id, logs in user_logs.items():
+            user = await session.get(User, user_id)
+            if not user:
+                user = User(id=user_id)
+                session.add(user)
+                await session.commit()
+                await session.refresh(user)
             
-            print("working on ", time_counter.id, time_counter.log_type, time_counter.parse_id)
+            # Сортируем логи по времени
+            logs.sort(key=lambda x: x.timestamp)
             
-            if (int(datetime.now().timestamp()) - time_counter.timestamp) > 172800*2: # Я хз ваще чо делать в таком случае, но случай хуйня
-                time_counter.parse_id = _.id 
-                user.time_spended_summary += 3600
+            # Обрабатываем пары вход/выход
+            i = 0
+            while i < len(logs):
+                current_log = logs[i]
                 
-            elif time_counter.log_type == VoiceLogTypeENUM.enter:
-                def find_first_exit_log() -> TimeCounterLog:
-                    for log in all_time_counters:
-                        if log.user_id == user.id and log.log_type == VoiceLogTypeENUM.exit and time_counter.id < log.id:
-                            return log
-                    return None
-
-                exit_log = find_first_exit_log()
-                if not exit_log: continue
-                print("finded exit log ", exit_log.id)
+                # Если это лог входа
+                if current_log.log_type == VoiceLogTypeENUM.enter:
+                    # Ищем следующий лог выхода для этого пользователя
+                    next_exit = None
+                    for j in range(i + 1, len(logs)):
+                        if logs[j].user_id == user_id and logs[j].log_type == VoiceLogTypeENUM.exit:
+                            next_exit = logs[j]
+                            break
+                    
+                    if next_exit:
+                        # Вычисляем время между входом и выходом
+                        time_spent = next_exit.timestamp - current_log.timestamp
+                        
+                        # Если время проведено в голосовом канале
+                        if time_spent > 0:
+                            user.time_spended_summary += time_spent
+                        
+                        # Отмечаем логи как обработанные
+                        current_log.parse_id = _.id
+                        next_exit.parse_id = _.id
+                        
+                        # Пропускаем обработанные логи
+                        i = j + 1
+                        continue
                 
-                time_counter.parse_id = _.id
-                exit_log.parse_id = _.id
-                
-                user.time_spended_summary += exit_log.timestamp - time_counter.timestamp
-                
-                print(time_counter.parse_id, exit_log.parse_id, user.time_spended_summary)
-                
+                i += 1
+            
             await session.commit()
+        
+        await session.close()
     
     @tasks.loop(minutes=10)
     async def parsing_loop(self): await self.parse_time_counters()
@@ -85,7 +114,7 @@ class TimeCounterCog(discord.Cog):
         
         await ctx.respond(embeds=get_embeds("timecounter\spend",
                                             [datetime.fromtimestamp(float(timeparse.timestamp_start))],
-                                            user_name=ctx.interaction.user.nick if not member else member.nick, 
+                                            user_name=ctx.interaction.user.display_name if not member else member.display_name, 
                                             time_spended_str=f"{days} дней {hours} часов {minutes} минут",
                                             member_img_url=ctx.interaction.user.display_avatar.url if not member else member.guild_avatar.url,
                           ))

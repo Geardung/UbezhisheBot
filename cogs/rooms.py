@@ -106,20 +106,33 @@ class CreateProcessView(discord.ui.View):
             
             await interaction.response.defer()
             
+            # Валидация HEX-цвета
+            color_hex = self.children[2].value.strip('#')
+            try:
+                color = int(color_hex, 16)
+            except ValueError:
+                return await interaction.followup.send("Неверный формат цвета! Используйте HEX-формат (например, #FF0000)", ephemeral=True)
+            
             guild = await interaction.client.fetch_guild(1307622842048839731)
             
-            role = await guild.create_role(name=self.children[0].value)
+            # Создаем роль с цветом и иконкой
+            role = await guild.create_role(
+                name=self.children[0].value,
+                color=discord.Color(color),
+                display_icon=self.children[1].value if self.children[1].value else None
+            )
             
             member = await guild.fetch_member(interaction.user.id)
             
             await member.add_roles(role)
             
             room = PrivateRoom(
-                                id=role.id,
-                                owner_id=interaction.user.id,
-                                label=self.children[0].value,
-                                color=str(discord.Color.default().value), # TODO поменять потом на результат
-                                icon="")
+                id=role.id,
+                owner_id=interaction.user.id,
+                label=self.children[0].value,
+                color=str(color),
+                icon=self.children[1].value if self.children[1].value else ""
+            )
             
             session = get_async_session()
             
@@ -132,11 +145,13 @@ class CreateProcessView(discord.ui.View):
         def __init__(self, custom_id = None, timeout = None) -> None:
             super().__init__(*[discord.ui.InputText(style=discord.InputTextStyle.short, 
                                                     label='Название приватки'),
-                               #discord.ui.InputText(style=discord.InputTextStyle.singleline, 
-                               #                     label='Ссылка на картинку'),
-                               #discord.ui.InputText(style=discord.InputTextStyle.short, 
-                               #                     label='Цвет в HEX')
-                               
+                               discord.ui.InputText(style=discord.InputTextStyle.singleline, 
+                                                    label='Ссылка на картинку (необязательно)',
+                                                    required=False,
+                                                    placeholder='https://example.com/image.png'),
+                               discord.ui.InputText(style=discord.InputTextStyle.short, 
+                                                    label='Цвет в HEX формате',
+                                                    placeholder='#FF0000')
                                ], 
                              title='Создание приватки')
     
@@ -328,3 +343,17 @@ class RoomsCog(discord.Cog):
                                                                     overwrites=overwr_dict)
                     
                     await member.move_to(new_channel)
+
+    async def check_room_permissions(self, user_id: int, room_id: int) -> bool:
+        session = get_async_session()
+        room = await session.execute(select(PrivateRoom).where(PrivateRoom.id == room_id))
+        return room.owner_id == user_id
+
+    @private_admin_delete_command.error
+    async def private_admin_delete_command_error(self, ctx: discord.ApplicationContext, error: Exception):
+        if isinstance(error, discord.NotFound):
+            await ctx.followup.send("Комната не найдена", ephemeral=True)
+        elif isinstance(error, discord.Forbidden):
+            await ctx.followup.send("Недостаточно прав", ephemeral=True)
+        else:
+            await ctx.followup.send(f"Произошла ошибка: {str(error)}", ephemeral=True)
