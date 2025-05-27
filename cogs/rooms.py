@@ -184,6 +184,463 @@ class CreateSuccessView(discord.ui.View):
         super().__init__(timeout=timeout, 
                          disable_on_timeout=disable_on_timeout)
    
+class PrivateManageView(discord.ui.View):
+    
+    class _AddMemberButton(discord.ui.Button):
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.response.defer()
+            
+            # Создаем модальное окно для ввода ID пользователя
+            class AddMemberModal(discord.ui.Modal):
+                def __init__(self):
+                    super().__init__(title="Добавление участника")
+                    self.add_item(discord.ui.InputText(
+                        label="ID или упоминание пользователя",
+                        placeholder="Введите ID или упомяните пользователя",
+                        required=True
+                    ))
+                
+                async def callback(self, interaction: discord.Interaction):
+                    await interaction.response.defer()
+                    
+                    # Получаем введенный текст
+                    user_input = self.children[0].value
+                    
+                    # Извлекаем ID пользователя из упоминания или используем как есть
+                    user_id = int(''.join(filter(str.isdigit, user_input)))
+                    
+                    session = get_async_session()
+                    
+                    # Проверяем существование пользователя
+                    try:
+                        user = await interaction.client.fetch_user(user_id)
+                    except:
+                        return await interaction.followup.send("Пользователь не найден!", ephemeral=True)
+                    
+                    # Проверяем, не является ли пользователь уже участником
+                    room_member = (await session.execute(select(PrivateRoomMember).where(
+                        PrivateRoomMember.room_id == self.view.room_id,
+                        PrivateRoomMember.user_id == user_id
+                    ))).scalar_one_or_none()
+                    
+                    if room_member:
+                        return await interaction.followup.send("Этот пользователь уже является участником комнаты!", ephemeral=True)
+                    
+                    # Добавляем пользователя
+                    log = PrivateRoomLog(
+                        room_id=self.view.room_id,
+                        action_type=PrivateActionTypeENUM.invite,
+                        actor=interaction.user.id,
+                        object=user_id
+                    )
+                    
+                    session.add(log)
+                    await session.commit()
+                    
+                    room_member = PrivateRoomMember(
+                        user_id=user_id,
+                        room_id=self.view.room_id,
+                        log_id=log.id
+                    )
+                    
+                    session.add(room_member)
+                    await session.commit()
+                    
+                    # Отправляем приглашение пользователю
+                    try:
+                        await user.send(embeds=get_embeds("private/manage/menu/members/invitation", private_name=self.view.room_name))
+                        await interaction.followup.send(f"Приглашение отправлено пользователю {user.mention}", ephemeral=True)
+                    except:
+                        await interaction.followup.send(f"Не удалось отправить приглашение пользователю {user.mention}. Возможно, у него закрыты личные сообщения.", ephemeral=True)
+            
+            await interaction.message.edit(view=None)
+            await interaction.response.send_modal(AddMemberModal())
+            
+        def __init__(self):
+            super().__init__(style=discord.ButtonStyle.green,
+                           label="Добавить участника",
+                           row=0)
+    
+    class _RemoveMemberSelect(discord.ui.Select):
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.response.defer()
+            
+            # Получаем ID выбранного пользователя
+            user_id = int(self.values[0])
+            
+            session = get_async_session()
+            
+            # Удаляем пользователя из комнаты
+            room_member = (await session.execute(select(PrivateRoomMember).where(
+                PrivateRoomMember.room_id == self.view.room_id,
+                PrivateRoomMember.user_id == user_id
+            ))).scalar_one_or_none()
+            
+            if room_member:
+                # Создаем лог удаления
+                log = PrivateRoomLog(
+                    room_id=self.view.room_id,
+                    action_type=PrivateActionTypeENUM.kick,
+                    actor=interaction.user.id,
+                    object=user_id
+                )
+                
+                session.add(log)
+                await session.commit()
+                
+                # Удаляем участника
+                await session.delete(room_member)
+                await session.commit()
+                
+                await interaction.followup.send(f"Участник успешно удален из комнаты!", ephemeral=True)
+            else:
+                await interaction.followup.send("Участник не найден!", ephemeral=True)
+            
+            # Обновляем список участников
+            members = (await session.execute(select(PrivateRoomMember).where(PrivateRoomMember.room_id == self.view.room_id))).scalars().all()
+            
+            options = []
+            for member in members:
+                user = await interaction.client.fetch_user(member.user_id)
+                options.append(discord.SelectOption(
+                    label=user.name,
+                    value=str(user.id),
+                    description=f"ID: {user.id}"
+                ))
+            
+            self.options = options
+            await interaction.message.edit(view=self.view)
+    
+    class _RemoveMemberButton(discord.ui.Button):
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.response.defer()
+            
+            session = get_async_session()
+            
+            # Получаем список участников
+            members = (await session.execute(select(PrivateRoomMember).where(PrivateRoomMember.room_id == self.view.room_id))).scalars().all()
+            
+            options = []
+            for member in members:
+                user = await interaction.client.fetch_user(member.user_id)
+                options.append(discord.SelectOption(
+                    label=user.name,
+                    value=str(user.id),
+                    description=f"ID: {user.id}"
+                ))
+            
+            # Создаем Select с участниками
+            select = self.view._RemoveMemberSelect(
+                placeholder="Выберите участника для удаления",
+                options=options,
+                row=0
+            )
+            
+            # Создаем новое view с Select
+            view = discord.ui.View(timeout=None)
+            view.add_item(select)
+            
+            await interaction.message.edit(view=view)
+            
+        def __init__(self):
+            super().__init__(style=discord.ButtonStyle.red,
+                           label="Удалить участника",
+                           row=0)
+    
+    class _SettingsButton(discord.ui.Button):
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.response.defer()
+            
+            # Создаем view с кнопками настроек
+            class SettingsView(discord.ui.View):
+                class _ChangeNameButton(discord.ui.Button):
+                    async def callback(self, interaction: discord.Interaction):
+                        
+                        class ChangeNameModal(discord.ui.Modal):
+                            def __init__(self):
+                                super().__init__(title="Изменение названия")
+                                self.add_item(discord.ui.InputText(
+                                    label="Новое название",
+                                    placeholder="Введите новое название комнаты",
+                                    required=True
+                                ))
+                            
+                            async def callback(self, interaction: discord.Interaction):
+                                await interaction.response.defer()
+                                
+                                session = get_async_session()
+                                
+                                # Обновляем название комнаты
+                                private_room = (await session.execute(select(PrivateRoom).where(PrivateRoom.id == self.view.room_id))).scalar_one_or_none()
+                                
+                                if private_room:
+                                    # Создаем лог изменения
+                                    log = PrivateRoomLog(
+                                        room_id=self.view.room_id,
+                                        action_type=PrivateActionTypeENUM.change,
+                                        actor=interaction.user.id,
+                                        before=private_room.label,
+                                        after=self.children[0].value
+                                    )
+                                    
+                                    session.add(log)
+                                    await session.commit()
+                                    
+                                    # Обновляем название
+                                    private_room.label = self.children[0].value
+                                    await session.commit()
+                                    
+                                    await interaction.followup.send("Название комнаты успешно изменено!", ephemeral=True)
+                                else:
+                                    await interaction.followup.send("Комната не найдена!", ephemeral=True)
+                        
+                        try:
+                            await interaction.message.edit(view=None)
+                            await interaction.response.send_modal(ChangeNameModal())
+                        except discord.NotFound:
+                            await interaction.followup.send("Сообщение больше не доступно. Пожалуйста, используйте команду снова.", ephemeral=True)
+                    
+                    def __init__(self):
+                        super().__init__(style=discord.ButtonStyle.gray,
+                                       label="Сменить название",
+                                       row=0)
+                
+                class _ChangeColorButton(discord.ui.Button):
+                    async def callback(self, interaction: discord.Interaction):
+                        await interaction.response.defer()
+                        
+                        class ChangeColorModal(discord.ui.Modal):
+                            def __init__(self):
+                                super().__init__(title="Изменение цвета")
+                                self.add_item(discord.ui.InputText(
+                                    label="Новый цвет",
+                                    placeholder="Введите цвет в HEX формате (например, #FF0000)",
+                                    required=True
+                                ))
+                            
+                            async def callback(self, interaction: discord.Interaction):
+                                await interaction.response.defer()
+                                
+                                # Валидация HEX-цвета
+                                color_hex = self.children[0].value.strip('#')
+                                try:
+                                    color = int(color_hex, 16)
+                                except ValueError:
+                                    return await interaction.followup.send("Неверный формат цвета! Используйте HEX-формат (например, #FF0000)", ephemeral=True)
+                                
+                                session = get_async_session()
+                                
+                                # Обновляем цвет комнаты
+                                private_room = (await session.execute(select(PrivateRoom).where(PrivateRoom.id == self.view.room_id))).scalar_one_or_none()
+                                
+                                if private_room:
+                                    # Создаем лог изменения
+                                    log = PrivateRoomLog(
+                                        room_id=self.view.room_id,
+                                        action_type=PrivateActionTypeENUM.change,
+                                        actor=interaction.user.id,
+                                        before=private_room.color,
+                                        after=str(color)
+                                    )
+                                    
+                                    session.add(log)
+                                    await session.commit()
+                                    
+                                    # Обновляем цвет
+                                    private_room.color = str(color)
+                                    await session.commit()
+                                    
+                                    # Обновляем цвет роли
+                                    guild = await interaction.client.fetch_guild(1307622842048839731)
+                                    role = await guild._fetch_role(self.view.room_id)
+                                    await role.edit(color=discord.Color(color))
+                                    
+                                    await interaction.followup.send("Цвет комнаты успешно изменен!", ephemeral=True)
+                                else:
+                                    await interaction.followup.send("Комната не найдена!", ephemeral=True)
+                        
+                        try:
+                            await interaction.message.edit(view=None)
+                            await interaction.response.send_modal(ChangeColorModal())
+                        except discord.NotFound:
+                            await interaction.followup.send("Сообщение больше не доступно. Пожалуйста, используйте команду снова.", ephemeral=True)
+                    
+                    def __init__(self):
+                        super().__init__(style=discord.ButtonStyle.gray,
+                                       label="Сменить цвет",
+                                       row=0)
+                
+                class _ChangeIconButton(discord.ui.Button):
+                    async def callback(self, interaction: discord.Interaction):
+                        await interaction.response.defer()
+                        
+                        class ChangeIconModal(discord.ui.Modal):
+                            def __init__(self):
+                                super().__init__(title="Изменение иконки")
+                                self.add_item(discord.ui.InputText(
+                                    label="Ссылка на иконку",
+                                    placeholder="Введите ссылку на новую иконку",
+                                    required=True
+                                ))
+                            
+                            async def callback(self, interaction: discord.Interaction):
+                                await interaction.response.defer()
+                                
+                                session = get_async_session()
+                                
+                                # Обновляем иконку комнаты
+                                private_room = (await session.execute(select(PrivateRoom).where(PrivateRoom.id == self.view.room_id))).scalar_one_or_none()
+                                
+                                if private_room:
+                                    # Создаем лог изменения
+                                    log = PrivateRoomLog(
+                                        room_id=self.view.room_id,
+                                        action_type=PrivateActionTypeENUM.change,
+                                        actor=interaction.user.id,
+                                        before=private_room.icon,
+                                        after=self.children[0].value
+                                    )
+                                    
+                                    session.add(log)
+                                    await session.commit()
+                                    
+                                    # Обновляем иконку
+                                    private_room.icon = self.children[0].value
+                                    await session.commit()
+                                    
+                                    # Обновляем иконку роли
+                                    guild = await interaction.client.fetch_guild(1307622842048839731)
+                                    role = await guild._fetch_role(self.view.room_id)
+                                    await role.edit(display_icon=self.children[0].value)
+                                    
+                                    await interaction.followup.send("Иконка комнаты успешно изменена!", ephemeral=True)
+                                else:
+                                    await interaction.followup.send("Комната не найдена!", ephemeral=True)
+                        
+                        try:
+                            await interaction.message.edit(view=None)
+                            await interaction.response.send_modal(ChangeIconModal())
+                        except discord.NotFound:
+                            await interaction.followup.send("Сообщение больше не доступно. Пожалуйста, используйте команду снова.", ephemeral=True)
+                    
+                    def __init__(self):
+                        super().__init__(style=discord.ButtonStyle.gray,
+                                       label="Сменить иконку",
+                                       row=0)
+                
+                def __init__(self, room_id: int):
+                    super().__init__(timeout=None)
+                    self.room_id = room_id
+                    
+                    self.add_item(self._ChangeNameButton())
+                    self.add_item(self._ChangeColorButton())
+                    self.add_item(self._ChangeIconButton())
+            
+            try:
+                view = SettingsView(room_id=self.view.room_id)
+                # Отправляем новое сообщение с настройками вместо редактирования
+                await interaction.followup.send("Настройки приватной комнаты:", view=view)
+            except discord.NotFound:
+                await interaction.followup.send("Сообщение больше не доступно. Пожалуйста, используйте команду снова.", ephemeral=True)
+            
+        def __init__(self):
+            super().__init__(style=discord.ButtonStyle.gray,
+                           label="Настройки",
+                           row=0)
+    
+    class _ExitButton(discord.ui.Button):
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.response.defer()
+            
+            session = get_async_session()
+            
+            # Удаляем пользователя из комнаты
+            room_member = (await session.execute(select(PrivateRoomMember).where(
+                PrivateRoomMember.room_id == self.view.room_id,
+                PrivateRoomMember.user_id == interaction.user.id
+            ))).scalar_one_or_none()
+            
+            if room_member:
+                # Создаем лог выхода
+                log = PrivateRoomLog(
+                    room_id=self.view.room_id,
+                    action_type=PrivateActionTypeENUM.kick,
+                    actor=interaction.user.id,
+                    object=interaction.user.id
+                )
+                
+                session.add(log)
+                await session.commit()
+                
+                # Удаляем участника
+                await session.delete(room_member)
+                await session.commit()
+                
+                await interaction.message.edit(view=None)
+                await interaction.followup.send("Вы успешно покинули комнату!", ephemeral=True)
+            else:
+                await interaction.followup.send("Вы не являетесь участником этой комнаты!", ephemeral=True)
+            
+        def __init__(self):
+            super().__init__(style=discord.ButtonStyle.red,
+                           label="Покинуть комнату",
+                           row=1)
+    
+    class _DeleteButton(discord.ui.Button):
+        async def callback(self, interaction: discord.Interaction):
+            await interaction.response.defer()
+            
+            session = get_async_session()
+            
+            # Удаляем комнату
+            private_room = (await session.execute(select(PrivateRoom).where(PrivateRoom.id == self.view.room_id))).scalar_one_or_none()
+            
+            if private_room:
+                # Создаем лог удаления
+                log = PrivateRoomLog(
+                    room_id=self.view.room_id,
+                    action_type=PrivateActionTypeENUM.change,
+                    actor=interaction.user.id,
+                    before="exists",
+                    after="deleted"
+                )
+                
+                session.add(log)
+                await session.commit()
+                
+                # Удаляем комнату
+                await session.delete(private_room)
+                await session.commit()
+                
+                await interaction.message.edit(view=None)
+                await interaction.followup.send("Комната успешно удалена!", ephemeral=True)
+            else:
+                await interaction.followup.send("Комната не найдена!", ephemeral=True)
+            
+        def __init__(self):
+            super().__init__(style=discord.ButtonStyle.danger,
+                           label="Удалить комнату",
+                           row=1)
+    
+    def __init__(self, room_name: str, room_id: int, members_list: str, is_owner: bool):
+        super().__init__(timeout=None)
+        self.room_name = room_name
+        self.room_id = room_id
+        self.members_list = members_list
+        
+        # Добавляем кнопки управления
+        if is_owner:
+            self.add_item(self._AddMemberButton())
+            self.add_item(self._RemoveMemberButton())
+            self.add_item(self._SettingsButton())
+        
+        # Если пользователь не владелец, показываем кнопку выхода
+        if not is_owner:
+            self.add_item(self._ExitButton())
+        # Если владелец, показываем кнопку удаления
+        else:
+            self.add_item(self._DeleteButton())
+
 class RoomsCog(discord.Cog):
     
     def __init__(self, bot: discord.Bot):
@@ -357,3 +814,142 @@ class RoomsCog(discord.Cog):
             await ctx.followup.send("Недостаточно прав", ephemeral=True)
         else:
             await ctx.followup.send(f"Произошла ошибка: {str(error)}", ephemeral=True)
+
+    @private_manage_subgroup.command(name="menu")
+    async def private_manage_menu_command(self, 
+                                        ctx: discord.ApplicationContext,
+                                        room_id: int = None):
+        
+        await ctx.defer(ephemeral=True)
+        
+        session = get_async_session()
+        
+        if not room_id:
+            # Проверяем, есть ли у пользователя своя приватка
+            private_room = (await session.execute(select(PrivateRoom).where(PrivateRoom.owner_id == ctx.interaction.user.id))).scalar_one_or_none()
+            
+            if not private_room:
+                return await ctx.followup.send(embeds=get_embeds("private/manage/no_rooms"), ephemeral=True)
+            
+            room_id = private_room.id
+        
+        # Проверяем существование приватки
+        private_room = (await session.execute(select(PrivateRoom).where(PrivateRoom.id == room_id))).scalar_one_or_none()
+        
+        if not private_room:
+            return await ctx.followup.send(embeds=get_embeds("private/manage/no_exists", room_id=room_id), ephemeral=True)
+        
+        # Проверяем доступ
+        is_owner = private_room.owner_id == ctx.interaction.user.id
+        is_member = (await session.execute(select(PrivateRoomMember).where(
+            PrivateRoomMember.room_id == room_id,
+            PrivateRoomMember.user_id == ctx.interaction.user.id
+        ))).scalar_one_or_none()
+        
+        if not (is_owner or is_member):
+            return await ctx.followup.send(embeds=get_embeds("private/manage/forbidden", room_id=room_id), ephemeral=True)
+        
+        # Получаем количество участников
+        members = (await session.execute(select(PrivateRoomMember).where(PrivateRoomMember.room_id == room_id))).scalars().all()
+        
+        # Формируем список участников
+        members_list = ""
+        for member in members:
+            user = await ctx.bot.fetch_user(member.user_id)
+            members_list += f"• {user.mention}\n"
+        
+        # Создаем view с кнопками
+        view = PrivateManageView(
+            room_name=private_room.label,
+            room_id=room_id,
+            members_list=members_list,
+            is_owner=is_owner
+        )
+        
+        # Получаем цвет для эмбеда
+        try:
+            color = int(private_room.color) if private_room.color else 3092790
+        except (ValueError, TypeError):
+            color = 3092790
+        
+        # Отправляем меню управления
+        await ctx.followup.send(embeds=get_embeds("private/manage/menu/main",
+                                                room_name=private_room.label,
+                                                owner_id=private_room.owner_id,
+                                                members_count=len(members),
+                                                room_id=room_id,
+                                                color=color),
+                              view=view,
+                              ephemeral=True)
+
+    @private_manage_subgroup.command(name="revoke")
+    async def private_manage_revoke_command(self,
+                                          ctx: discord.ApplicationContext,
+                                          member: discord.Member):
+        
+        await ctx.defer(ephemeral=True)
+        
+        session = get_async_session()
+        
+        # Проверяем, есть ли у пользователя своя приватка
+        private_room = (await session.execute(select(PrivateRoom).where(PrivateRoom.owner_id == ctx.interaction.user.id))).scalar_one_or_none()
+        
+        if not private_room:
+            return await ctx.followup.send(embeds=get_embeds("private/manage/no_rooms"), ephemeral=True)
+        
+        # Проверяем, является ли указанный пользователь участником
+        room_member = (await session.execute(select(PrivateRoomMember).where(
+            PrivateRoomMember.room_id == private_room.id,
+            PrivateRoomMember.user_id == member.id
+        ))).scalar_one_or_none()
+        
+        if not room_member:
+            return await ctx.followup.send("Этот пользователь не является участником вашей приватной комнаты!", ephemeral=True)
+        
+        # Получаем список всех участников
+        members = (await session.execute(select(PrivateRoomMember).where(PrivateRoomMember.room_id == private_room.id))).scalars().all()
+        
+        members_list = ""
+        for m in members:
+            user = await ctx.bot.fetch_user(m.user_id)
+            members_list += f"• {user.mention}\n"
+        
+        await ctx.followup.send(embeds=get_embeds("private/manage/menu/members/revoke", members_list=members_list), ephemeral=True)
+
+    @private_manage_subgroup.command(name="exit")
+    async def private_manage_exit_command(self,
+                                        ctx: discord.ApplicationContext):
+        
+        await ctx.defer(ephemeral=True)
+        
+        session = get_async_session()
+        
+        # Проверяем, является ли пользователь участником какой-либо приватки
+        room_member = (await session.execute(select(PrivateRoomMember).where(PrivateRoomMember.user_id == ctx.interaction.user.id))).scalar_one_or_none()
+        
+        if not room_member:
+            return await ctx.followup.send("Вы не являетесь участником какой-либо приватной комнаты!", ephemeral=True)
+        
+        # Получаем информацию о приватке
+        private_room = (await session.execute(select(PrivateRoom).where(PrivateRoom.id == room_member.room_id))).scalar_one_or_none()
+        
+        if private_room.owner_id == ctx.interaction.user.id:
+            return await ctx.followup.send("Владелец не может покинуть свою приватную комнату! Используйте команду удаления комнаты.", ephemeral=True)
+        
+        await ctx.followup.send(embeds=get_embeds("private/manage/menu/exit", room_name=private_room.label), ephemeral=True)
+
+    @private_manage_subgroup.command(name="delete")
+    async def private_manage_delete_command(self,
+                                          ctx: discord.ApplicationContext):
+        
+        await ctx.defer(ephemeral=True)
+        
+        session = get_async_session()
+        
+        # Проверяем, есть ли у пользователя своя приватка
+        private_room = (await session.execute(select(PrivateRoom).where(PrivateRoom.owner_id == ctx.interaction.user.id))).scalar_one_or_none()
+        
+        if not private_room:
+            return await ctx.followup.send(embeds=get_embeds("private/manage/no_rooms"), ephemeral=True)
+        
+        await ctx.followup.send(embeds=get_embeds("private/manage/menu/delete", room_name=private_room.label), ephemeral=True)
