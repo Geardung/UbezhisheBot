@@ -64,7 +64,7 @@ def get_embeds(name: str, timestamps: Union[list[datetime], None] = None, **kwar
         
         raw_diction = f.read()
         
-        for var, val in kwargs.items(): raw_diction = raw_diction.replace("%"+var+"%", val)
+        for var, val in kwargs.items(): raw_diction = raw_diction.replace("%"+var+"%", str(val))
         
         diction = json.loads(raw_diction)
         

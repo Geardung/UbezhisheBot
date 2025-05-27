@@ -19,7 +19,7 @@ class InitialCog(discord.Cog):
         
         session = get_async_session()
         
-        channel: discord.VoiceChannel = await self.bot.fetch_channel(1314291685538271333)
+        channel: discord.VoiceChannel = await self.bot.fetch_channel(1331265751788818433)
         
         await channel.connect()
         
