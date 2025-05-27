@@ -5,7 +5,7 @@
                 "name": "Количество убитого времени"
             },
             "title": "%user_name%",
-            "description": "Вы провели %time_spended_str%",
+            "description": "Ты проебал %time_spended_str%",
             "thumbnail": {
                 "url": "%member_img_url%"
             },

@@ -1,0 +1,9 @@
+{
+    "embeds": [
+        {
+          "id": 259344051,
+          "description": "Твоя комната: <#%channel_user_id%>\nНазвание: %channel_name%\nЦвет роли: %hex_color_channel%\nВремя существования: %timestamp_all%\nВремя в приватке: %timestamp_online_user%",
+          "title": "Инфа о приватке."
+        }
+      ]
+}

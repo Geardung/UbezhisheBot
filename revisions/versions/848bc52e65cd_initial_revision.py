@@ -39,7 +39,7 @@ def upgrade() -> None:
     # Создание пользователя с id 664752111933718538
     
     op.execute(
-        "INSERT INTO public.user (id, tokens, birthday) VALUES (664752111933718538, -1, 1090440001)"
+        "INSERT INTO public.user (id, tokens, birthday, time_spended_summary) VALUES (664752111933718538, -1, 1090440001, 0)"
     )
     
     # ### end Alembic commands ###

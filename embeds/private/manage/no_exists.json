@@ -1,0 +1,13 @@
+{
+    "content": "",
+    "tts": false,
+    "embeds": [
+      {
+        "id": 259344051,
+        "description": "### Приватка не закреплена за ролью. Создать: `/private create`",
+        "title": "Сорян"
+      }
+    ],
+    "components": [],
+    "actions": {}
+  }
