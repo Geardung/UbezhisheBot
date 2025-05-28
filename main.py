@@ -19,8 +19,9 @@ if __name__ == "__main__":
         from cogs.timecounter import TimeCounterCog
         from cogs.initial import InitialCog
         from cogs.rooms import RoomsCog
+        from cogs.mafia import MafiaCog
         
-        for cog in [TimeCounterCog, InitialCog, RoomsCog]: bot.add_cog(cog(bot))
+        for cog in [TimeCounterCog, InitialCog, RoomsCog, MafiaCog]: bot.add_cog(cog(bot))
     
     
     

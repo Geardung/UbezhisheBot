@@ -104,3 +104,89 @@ class PrivateRoomMember(Base):
     
 
 metadata = Base.metadata
+
+class MafiaGameStatusENUM(Enum):
+    LOBBY = "lobby"
+    RUNNING = "running"
+    FINISHED = "finished"
+    CANCELLED = "cancelled"
+
+class MafiaTeamENUM(Enum):
+    MAFIA = "mafia"
+    TOWN = "town"
+    NEUTRAL = "neutral"
+
+class MafiaActionTypeENUM(Enum):
+    VOTE = "vote"
+    KILL_ATTEMPT = "kill_attempt"
+    HEAL = "heal"
+    CHECK_ROLE = "check_role"
+    CHAT_MESSAGE = "chat_message"
+    GAME_START = "game_start"
+    PLAYER_DEATH = "player_death"
+    GAME_END = "game_end"
+
+class MafiaGame(Base):
+    __tablename__ = "mafia_game"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    guild_id: Mapped[int] = mapped_column(BigInteger)
+    category_channel_id: Mapped[int] = mapped_column(BigInteger)
+    main_voice_channel_id: Mapped[int] = mapped_column(BigInteger)
+    main_text_channel_id: Mapped[int] = mapped_column(BigInteger)
+    mafia_voice_channel_id: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    cemetery_voice_channel_id: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    log_text_channel_id: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    leader_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
+    status: Mapped[MafiaGameStatusENUM] = mapped_column(String(20))
+    start_time: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    end_time: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    winner_team: Mapped[str] = mapped_column(String(50), nullable=True)
+    game_settings: Mapped[str] = mapped_column(JSON, nullable=True)
+    current_round: Mapped[int] = mapped_column(Integer, default=1)
+    lobby_message_id: Mapped[int] = mapped_column(BigInteger, nullable=True)  # ID сообщения с эмбедом лобби
+
+class MafiaPlayer(Base):
+    __tablename__ = "mafia_player"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    game_id: Mapped[int] = mapped_column(ForeignKey("mafia_game.id", ondelete="CASCADE"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
+    role_id: Mapped[int] = mapped_column(ForeignKey("mafia_role.id"), nullable=True)
+    is_alive: Mapped[bool] = mapped_column(Boolean, default=True)
+    death_night_number: Mapped[int] = mapped_column(Integer, nullable=True)
+    death_reason: Mapped[str] = mapped_column(String(255), nullable=True)
+    personal_voice_channel_id: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    join_time: Mapped[int] = mapped_column(BigInteger, default=lambda: int(datetime.now().timestamp()))
+    leave_time: Mapped[int] = mapped_column(BigInteger, nullable=True)
+
+class MafiaRole(Base):
+    __tablename__ = "mafia_role"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    role_name: Mapped[str] = mapped_column(String(100), unique=True)
+    role_description: Mapped[str] = mapped_column(Text, nullable=True)
+    team: Mapped[MafiaTeamENUM] = mapped_column(String(50))
+    is_custom_role: Mapped[bool] = mapped_column(Boolean, default=False)
+    abilities: Mapped[str] = mapped_column(JSON, nullable=True)
+
+class MafiaGameLog(Base):
+    __tablename__ = "mafia_game_log"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    game_id: Mapped[int] = mapped_column(ForeignKey("mafia_game.id", ondelete="CASCADE"))
+    round_number: Mapped[int] = mapped_column(Integer, nullable=True)
+    phase: Mapped[str] = mapped_column(String(10), nullable=True)
+    actor_player_id: Mapped[int] = mapped_column(ForeignKey("mafia_player.id"), nullable=True)
+    target_player_id: Mapped[int] = mapped_column(ForeignKey("mafia_player.id"), nullable=True)
+    action_type: Mapped[MafiaActionTypeENUM] = mapped_column(String(50))
+    action_details: Mapped[str] = mapped_column(JSON, nullable=True)
+    timestamp: Mapped[int] = mapped_column(BigInteger, default=lambda: int(datetime.now().timestamp()))
+
+class MafiaRoleSetting(Base):
+    __tablename__ = "mafia_role_setting"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    game_id: Mapped[int] = mapped_column(ForeignKey("mafia_game.id", ondelete="CASCADE"))
+    role_id: Mapped[int] = mapped_column(ForeignKey("mafia_role.id", ondelete="CASCADE"))
+    count: Mapped[int] = mapped_column(Integer)
