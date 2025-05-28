@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import discord
 from discord.ext import commands, tasks
 from typing import Union, Optional
@@ -177,7 +177,7 @@ class MafiaCog(discord.Cog):
                 return
         
         # Создаем категорию для игры
-        category = await ctx.guild.create_category("🎭 Мафия")
+        category = await ctx.guild.create_category("🎭 Мафия", position=0)
         
         # Создаем каналы
         main_text = await category.create_text_channel("общий-чат")
@@ -222,6 +222,21 @@ class MafiaCog(discord.Cog):
         # Сохраняем ID сообщения
         game.lobby_message_id = message.id
         await session.commit()
+        
+        # Создаем событие
+        event = await ctx.guild.create_scheduled_event(
+            name="🎭 Игра в Мафию",
+            description="Присоединяйтесь к игре в Мафию!",
+            start_time=datetime.now() + timedelta(minutes=5),
+            end_time=datetime.now() + timedelta(hours=2),
+            channel=main_voice
+        )
+        
+        # Входим в войс канал
+        await main_voice.connect()
+        
+        # Меняем никнейм бота
+        await ctx.guild.me.edit(nick="DJ колонка")
         
         await ctx.followup.send("Игра создана! Присоединяйтесь через кнопку или команду `/mafia join`", ephemeral=True)
     
