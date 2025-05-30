@@ -22,6 +22,7 @@ from models import (
     BunkerGameStatusENUM, BunkerCardTypeENUM, BunkerActionTypeENUM,
     User
 )
+from bunker_audio import BunkerAudioManager
 
 logger = logging.getLogger(__name__)
 
@@ -1298,6 +1299,7 @@ class BunkerCog(discord.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.active_games: Dict[int, BunkerGame] = {}  # game_id -> game
+        self.audio_manager = BunkerAudioManager(bot)  # Инициализация аудио менеджера
         
     async def cog_load(self):
         """Загрузка кога и восстановление активных игр"""
@@ -1307,6 +1309,7 @@ class BunkerCog(discord.Cog):
         
     bunker_group = discord.SlashCommandGroup("bunker")
     leader_group = bunker_group.create_subgroup("leader", "Команды для ведущего игры")
+    audio_group = bunker_group.create_subgroup("audio", "Команды управления звуком")
     
     @bunker_group.command(name="create")
     @app_commands.describe(
@@ -1446,7 +1449,12 @@ class BunkerCog(discord.Cog):
                                   f"🌍 Катастрофа: {catastrophe_info['name']}\n" +
                                   f"⏱️ Срок выживания: {catastrophe_info['survival_years']} лет\n" +
                                   f"🏠 Площадь бункера: {bunker_info['area']} кв.м{secret_room_text}", ephemeral=True)
-
+            
+            # Подключаемся к голосовому каналу и запускаем музыку лобби
+            if ctx.author.voice:
+                await self.audio_manager.connect_to_voice(new_game.id, ctx.author.voice.channel)
+                await self.audio_manager.play_background_music(new_game.id, "lobby_ambient")
+            
     async def update_lobby_embed(self, game_id: int):
         """Обновление эмбеда лобби"""
         async with get_async_session() as session:
@@ -1570,6 +1578,9 @@ class BunkerCog(discord.Cog):
             # Получаем каналы
             announcements_channel = self.bot.get_channel(game.announcements_text_channel_id)
             player_cards_channel = self.bot.get_channel(game.player_cards_text_channel_id)
+            
+            # Воспроизводим голосовое объявление катастрофы
+            await self.audio_manager.play_sound(game.id, "voice/catastrophe", volume=0.8, wait_finish=True)
             
             # Отправляем сообщение о начале игры с расширенной информацией
             known_rooms_str = ", ".join(game.bunker_known_rooms.get("rooms", []) if game.bunker_known_rooms else ["Неизвестно"])
@@ -1713,6 +1724,11 @@ class BunkerCog(discord.Cog):
             )
             session.add(log)
             await session.commit()
+            
+            # Воспроизводим звук катастрофы и закрытия бункера
+            await self.audio_manager.play_catastrophe_sound(game.id, game.catastrophe)
+            await self.audio_manager.play_sound(game.id, "bunker_close")
+            await self.audio_manager.play_background_music(game.id, "bunker_ambient")
 
     @leader_group.command(name="start")
     async def bunker_start(self, ctx: discord.ApplicationContext):
@@ -1884,6 +1900,9 @@ class BunkerCog(discord.Cog):
             await session.commit()
             
             await ctx.followup.send(f"✅ Секретная комната '{secret_room['name']}' была открыта!", ephemeral=True)
+            
+            # Воспроизводим звук открытия двери
+            await self.audio_manager.play_sound(game.id, "door_open")
 
     def generate_catastrophe(self):
         """Генерирует случайную катастрофу"""
@@ -1988,6 +2007,113 @@ class BunkerCog(discord.Cog):
             
             await ctx.followup.send(embed=embed, ephemeral=True)
 
+    @bunker_group.command(name="mycards")
+    async def bunker_mycards(self, ctx: discord.ApplicationContext):
+        """Повторно отправить ваши карты в ЛС"""
+        await ctx.defer(ephemeral=True)
+        
+        async with get_async_session() as session:
+            # Ищем активную игру
+            game = await session.execute(
+                select(BunkerGame).where(
+                    and_(
+                        BunkerGame.guild_id == ctx.guild_id,
+                        BunkerGame.status.in_([
+                            BunkerGameStatusENUM.RUNNING.value,
+                            BunkerGameStatusENUM.LOBBY.value
+                        ])
+                    )
+                )
+            )
+            game = game.scalar_one_or_none()
+            
+            if not game:
+                await ctx.followup.send("❌ Активная игра не найдена!", ephemeral=True)
+                return
+            
+            # Ищем игрока
+            player = await session.execute(
+                select(BunkerPlayer).where(
+                    and_(
+                        BunkerPlayer.game_id == game.id,
+                        BunkerPlayer.user_id == ctx.author.id
+                    )
+                )
+            )
+            player = player.scalar_one_or_none()
+            
+            if not player:
+                await ctx.followup.send("❌ Вы не участвуете в этой игре!", ephemeral=True)
+                return
+            
+            # Получаем карты игрока
+            cards = await session.execute(
+                select(BunkerPlayerCard).where(BunkerPlayerCard.player_id == player.id)
+            )
+            cards = cards.scalars().all()
+            
+            if not cards:
+                await ctx.followup.send("❌ У вас нет карт! Возможно игра ещё не началась.", ephemeral=True)
+                return
+            
+            # Формируем карты в словарь
+            cards_dict = {}
+            action_cards = []
+            
+            for card in cards:
+                if card.card_type == "action_card":
+                    if not card.is_revealed:  # Неиспользованная карта действия
+                        action_cards.append(card.card_name)
+                else:
+                    cards_dict[card.card_type] = card.card_name
+            
+            # Создаем View с кнопками для раскрытия карт
+            card_reveal_view = CardRevealView(player.id, game.id, cards_dict, self.bot)
+            await card_reveal_view.refresh_buttons()
+            
+            # Отправляем карты игроку в ЛС
+            embeds = get_embeds("bunker/player_cards_dm",
+                playerName=ctx.author.display_name,
+                professionName=cards_dict.get("profession", "Неизвестно"),
+                healthStatus=cards_dict.get("health", "Неизвестно"),
+                age=cards_dict.get("age", "Неизвестно"),
+                gender=cards_dict.get("gender", "Неизвестно"),
+                fullName=cards_dict.get("full_name", "Неизвестно"),
+                skillName=cards_dict.get("skill", "Неизвестно"),
+                itemName=cards_dict.get("baggage", "Неизвестно"),
+                traitName=cards_dict.get("phobia", "Неизвестно"),
+                extraInfo=cards_dict.get("additional_info", "Неизвестно"),
+                hiddenRole=cards_dict.get("hidden_role", "Нет"),
+                actionCard=", ".join(action_cards) if action_cards else "Нет"
+            )
+            
+            try:
+                await ctx.author.send(content="🔄 **Ваши карты игрока:**", embeds=embeds, view=card_reveal_view)
+                
+                # Отправляем карты действий отдельно если есть
+                if action_cards:
+                    action_view = ActionCardView(player.id, game.id, action_cards, self.bot)
+                    action_embed = discord.Embed(
+                        title="🎴 Ваши карты действий",
+                        description="Используйте эти карты в нужный момент для изменения хода игры!",
+                        color=0x9932cc
+                    )
+                    
+                    for card_name in action_cards:
+                        card_info = ACTION_CARDS.get(card_name, {})
+                        action_embed.add_field(
+                            name=f"🪄 {card_name}",
+                            value=card_info.get("description", "Описание недоступно"),
+                            inline=False
+                        )
+                    
+                    await ctx.author.send(embed=action_embed, view=action_view)
+                
+                await ctx.followup.send("✅ Карты отправлены в ваши личные сообщения!", ephemeral=True)
+                
+            except discord.Forbidden:
+                await ctx.followup.send("❌ Не удалось отправить карты в ЛС! Пожалуйста, включите личные сообщения.", ephemeral=True)
+
     @leader_group.command(name="voting")
     async def bunker_voting(self, ctx: discord.ApplicationContext):
         """Начать голосование за изгнание"""
@@ -2081,6 +2207,10 @@ class BunkerCog(discord.Cog):
                     )
             
             await ctx.followup.send("✅ Голосование началось! Игроки получили бюллетени в ЛС.", ephemeral=True)
+            
+            # Воспроизводим звук начала голосования
+            await self.audio_manager.play_sound(game.id, "voting_bell")
+            await self.audio_manager.play_background_music(game.id, "tension")
 
     @leader_group.command(name="stop_voting")
     async def bunker_stop_voting(self, ctx: discord.ApplicationContext):
@@ -2304,6 +2434,9 @@ class BunkerCog(discord.Cog):
             await announcements_channel.send(embed=embed)
         
         await session.commit()
+        
+        # Воспроизводим музыку победы
+        await self.audio_manager.play_background_music(game.id, "victory")
 
     @leader_group.command(name="voting_results")
     async def bunker_voting_results(self, ctx: discord.ApplicationContext):
@@ -2444,6 +2577,9 @@ class BunkerCog(discord.Cog):
             await session.commit()
             
             await ctx.followup.send(f"✅ Событие '{event_info['name']}' активировано!", ephemeral=True)
+            
+            # Воспроизводим звук события
+            await self.audio_manager.play_event_sound(game.id, event_info["name"])
 
     @leader_group.command(name="next_round")
     async def bunker_next_round(self, ctx: discord.ApplicationContext):
@@ -2593,17 +2729,10 @@ class BunkerCog(discord.Cog):
             await ctx.followup.send(f"✅ Начался раунд {game.current_round}!", ephemeral=True)
 
     @bunker_group.command(name="reveal")
-    @app_commands.describe(
-        card_type="Тип карты для раскрытия",
-        card_value="Значение карты (если отличается от того, что у вас)"
-    )
     async def bunker_reveal(self, ctx: discord.ApplicationContext, 
-                           card_type: discord.Option(str, choices=[
-                               "profession", "health", "age", "gender", "full_name", 
-                               "skill", "baggage", "phobia", "additional_info", "hidden_role"
-                           ]),
+                           card_type: str = discord.Option(description="Тип карты", choices=["profession", "health", "age", "gender", "full_name", "skill", "baggage", "phobia", "additional_info", "hidden_role"]),
                            card_value: Optional[str] = None):
-        """Раскрыть одну из своих карт"""
+        """Раскрыть карту"""
         await ctx.defer(ephemeral=True)
         
         async with get_async_session() as session:
@@ -2716,6 +2845,9 @@ class BunkerCog(discord.Cog):
                     pass
             
             await ctx.followup.send(f"✅ Карта '{card_type_names.get(card_type, card_type)}' раскрыта!", ephemeral=True)
+            
+            # Воспроизводим звук раскрытия карты
+            await self.audio_manager.play_sound(game.id, "card_flip")
 
     @leader_group.command(name="test_card_buttons")
     async def bunker_test_card_buttons(self, ctx: discord.ApplicationContext):
@@ -2955,6 +3087,118 @@ class BunkerCog(discord.Cog):
                 embed.set_footer(text="Используйте /bunker use_action для активации карты")
             
             await ctx.followup.send(embed=embed, ephemeral=True)
+
+    @audio_group.command(name="status")
+    async def audio_status(self, ctx: discord.ApplicationContext, game_id: Optional[int] = None):
+        """Показать статус звуковой системы"""
+        if game_id and game_id not in self.active_games:
+            await ctx.respond("❌ Игра не найдена!", ephemeral=True)
+            return
+            
+        status = self.audio_manager.get_audio_status(game_id) if game_id else self.audio_manager.get_audio_status()
+        
+        embed = discord.Embed(
+            title="🎵 Статус звуковой системы",
+            color=discord.Color.blue()
+        )
+        
+        if game_id:
+            game = self.active_games[game_id]
+            embed.add_field(
+                name="Игра",
+                value=f"ID: {game_id}\nКатастрофа: {game.catastrophe}",
+                inline=False
+            )
+            
+        embed.add_field(
+            name="Звуковые эффекты",
+            value="✅ Включены" if status.get("sound_effects_enabled", True) else "❌ Выключены",
+            inline=True
+        )
+        embed.add_field(
+            name="Фоновая музыка",
+            value="✅ Включена" if status.get("background_music_enabled", True) else "❌ Выключена",
+            inline=True
+        )
+        embed.add_field(
+            name="Громкость",
+            value=f"{int(status.get('volume', 1.0) * 100)}%",
+            inline=True
+        )
+        
+        if game_id and status.get("voice_client"):
+            embed.add_field(
+                name="Голосовой канал",
+                value=f"✅ Подключен к {status['voice_client'].channel.name}",
+                inline=False
+            )
+            
+        await ctx.respond(embed=embed, ephemeral=True)
+        
+    @audio_group.command(name="connect")
+    async def audio_connect(self, ctx: discord.ApplicationContext, game_id: Optional[int] = None):
+        """Подключиться к голосовому каналу"""
+        if not ctx.author.voice:
+            await ctx.respond("❌ Вы должны быть в голосовом канале!", ephemeral=True)
+            return
+            
+        if game_id and game_id not in self.active_games:
+            await ctx.respond("❌ Игра не найдена!", ephemeral=True)
+            return
+            
+        game = self.active_games.get(game_id) if game_id else None
+        if not game and not game_id:
+            await ctx.respond("❌ Нет активной игры!", ephemeral=True)
+            return
+            
+        success = await self.audio_manager.connect_to_voice(
+            game.id if game else None,
+            ctx.author.voice.channel
+        )
+        
+        if success:
+            await ctx.respond("✅ Подключено к голосовому каналу!", ephemeral=True)
+        else:
+            await ctx.respond("❌ Не удалось подключиться к голосовому каналу!", ephemeral=True)
+            
+    @audio_group.command(name="disconnect")
+    async def audio_disconnect(self, ctx: discord.ApplicationContext, game_id: Optional[int] = None):
+        """Отключиться от голосового канала"""
+        if game_id and game_id not in self.active_games:
+            await ctx.respond("❌ Игра не найдена!", ephemeral=True)
+            return
+            
+        game = self.active_games.get(game_id) if game_id else None
+        await self.audio_manager.disconnect_from_voice(game.id if game else None)
+        await ctx.respond("✅ Отключено от голосового канала!", ephemeral=True)
+        
+    @audio_group.command(name="toggle")
+    async def audio_toggle(self, ctx: discord.ApplicationContext, 
+                          audio_type: str = discord.Option(description="Тип звука для переключения", choices=["all", "sound_effects", "background_music"]),
+                          game_id: Optional[int] = None):
+        """Включить/выключить звук"""
+        if game_id and game_id not in self.active_games:
+            await ctx.respond("❌ Игра не найдена!", ephemeral=True)
+            return
+            
+        game = self.active_games.get(game_id) if game_id else None
+        self.audio_manager.toggle_audio(audio_type)
+        
+        status = "включен" if self.audio_manager.get_audio_status(game.id if game else None).get(f"{audio_type}_enabled", True) else "выключен"
+        await ctx.respond(f"✅ Звук {audio_type} {status}!", ephemeral=True)
+        
+    @audio_group.command(name="volume")
+    async def audio_volume(self, ctx: discord.ApplicationContext, 
+                          volume: int = discord.Option(description="Громкость (0-100)", min_value=0, max_value=100),
+                          game_id: Optional[int] = None):
+        """Установить громкость"""
+        if game_id and game_id not in self.active_games:
+            await ctx.respond("❌ Игра не найдена!", ephemeral=True)
+            return
+            
+        game = self.active_games.get(game_id) if game_id else None
+        await self.audio_manager.set_volume(volume / 100)
+        await ctx.respond(f"✅ Громкость установлена на {volume}%!", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(BunkerCog(bot)) 
