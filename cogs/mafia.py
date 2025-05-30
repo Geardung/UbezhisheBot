@@ -11,12 +11,11 @@ from utils import get_embeds
 from sqlalchemy import select, and_, or_
 import random
 import asyncio
-
 class JoinButton(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
         
-    @discord.ui.button(label="ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤПрисоединитьсяㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ", style=discord.ButtonStyle.green)
+    @discord.ui.button(label="ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤПрисоединитьсяㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ", style=discord.ButtonStyle.green)
     async def join_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         
@@ -177,7 +176,8 @@ class MafiaCog(discord.Cog):
                 return
         
         # Создаем категорию для игры
-        category = await ctx.guild.create_category("🎭 Мафия", position=0)
+        category = await ctx.guild.create_category("🎭 Мафия")
+        await category.edit(position=0)
         
         # Создаем каналы
         main_text = await category.create_text_channel("общий-чат")
@@ -229,7 +229,7 @@ class MafiaCog(discord.Cog):
             description="Присоединяйтесь к игре в Мафию!",
             start_time=datetime.now() + timedelta(minutes=5),
             end_time=datetime.now() + timedelta(hours=2),
-            channel=main_voice
+            location=main_voice
         )
         
         # Входим в войс канал
@@ -237,6 +237,8 @@ class MafiaCog(discord.Cog):
         
         # Меняем никнейм бота
         await ctx.guild.me.edit(nick="DJ колонка")
+        
+        await event.start()
         
         await ctx.followup.send("Игра создана! Присоединяйтесь через кнопку или команду `/mafia join`", ephemeral=True)
     

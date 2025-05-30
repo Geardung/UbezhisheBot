@@ -1,0 +1,75 @@
+[
+  {
+    "title": "💀 ИГРОК ИЗГНАН ИЗ БУНКЕРА",
+    "description": "По результатам голосования один из выживших покидает бункер навсегда...",
+    "color": 10038562,
+    "thumbnail": {
+      "url": "%expelledPlayerAvatar%"
+    },
+    "fields": [
+      {
+        "name": "👤 Изгнанный игрок",
+        "value": "**%expelledPlayerName%**",
+        "inline": true
+      },
+      {
+        "name": "🗳️ Голосов против",
+        "value": "%votesAgainst% из %totalVotes%",
+        "inline": true
+      },
+      {
+        "name": "📅 Раунд изгнания",
+        "value": "Раунд %roundNumber%",
+        "inline": true
+      },
+      {
+        "name": "🧑‍🚀 Профессия",
+        "value": "%expelledProfession%",
+        "inline": true
+      },
+      {
+        "name": "❤️ Здоровье",
+        "value": "%expelledHealth%",
+        "inline": true
+      },
+      {
+        "name": "🎂 Возраст и пол",
+        "value": "%expelledAge% лет, %expelledGender%",
+        "inline": true
+      },
+      {
+        "name": "📛 Полное имя",
+        "value": "%expelledFullName%",
+        "inline": true
+      },
+      {
+        "name": "🛠️ Навык",
+        "value": "%expelledSkill%",
+        "inline": true
+      },
+      {
+        "name": "🎒 Багаж",
+        "value": "%expelledBaggage%",
+        "inline": true
+      },
+      {
+        "name": "👻 Фобия",
+        "value": "%expelledPhobia%",
+        "inline": true
+      },
+      {
+        "name": "📜 Дополнительная информация",
+        "value": "%expelledAdditionalInfo%",
+        "inline": true
+      },
+      {
+        "name": "🎭 Скрытая роль",
+        "value": "%expelledHiddenRole%",
+        "inline": true
+      }
+    ],
+    "footer": {
+      "text": "Все карты изгнанного игрока теперь раскрыты. В бункере остается %remainingPlayers% человек."
+    }
+  }
+] 
