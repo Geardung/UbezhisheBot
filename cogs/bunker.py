@@ -163,6 +163,154 @@ CATASTROPHES = {
     }
 }
 
+# Карты действий с их эффектами
+ACTION_CARDS = {
+    "Смена реальности": {
+        "description": "Все игроки получают новую случайную характеристику выбранного типа",
+        "effect_type": "change_all_players",
+        "targets": "all",
+        "can_choose_card_type": True,
+        "activation": "any_time",
+        "rarity": "rare"
+    },
+    "Обмен": {
+        "description": "Два игрока обмениваются одной выбранной характеристикой",
+        "effect_type": "swap_cards", 
+        "targets": "two_players",
+        "can_choose_card_type": True,
+        "activation": "any_time",
+        "rarity": "common"
+    },
+    "Раскрытие тайны": {
+        "description": "Заставить одного игрока немедленно раскрыть одну из скрытых карт",
+        "effect_type": "force_reveal",
+        "targets": "one_player",
+        "can_choose_card_type": False,
+        "activation": "any_time", 
+        "rarity": "common"
+    },
+    "Защитный купол": {
+        "description": "Дает иммунитет от изгнания на одно голосование",
+        "effect_type": "immunity",
+        "targets": "one_player",
+        "can_choose_card_type": False,
+        "activation": "before_vote",
+        "rarity": "rare"
+    },
+    "Саботаж": {
+        "description": "Вызывает негативное событие в бункере",
+        "effect_type": "trigger_event",
+        "targets": "none",
+        "can_choose_card_type": False,
+        "activation": "any_time",
+        "rarity": "uncommon"
+    },
+    "Дополнительное место": {
+        "description": "Увеличивает вместимость бункера на 1",
+        "effect_type": "increase_capacity",
+        "targets": "none", 
+        "can_choose_card_type": False,
+        "activation": "any_time",
+        "rarity": "epic"
+    },
+    "Общая амнезия": {
+        "description": "Одна характеристика у всех игроков заменяется на новую случайную",
+        "effect_type": "replace_all_cards",
+        "targets": "all",
+        "can_choose_card_type": True,
+        "activation": "any_time",
+        "rarity": "uncommon"
+    },
+    "Целитель": {
+        "description": "Улучшает здоровье выбранного игрока до 'Отличного'",
+        "effect_type": "heal_player",
+        "targets": "one_player", 
+        "can_choose_card_type": False,
+        "activation": "any_time",
+        "rarity": "uncommon"
+    },
+    "Болезнь": {
+        "description": "Ухудшает здоровье выбранного игрока",
+        "effect_type": "sicken_player",
+        "targets": "one_player",
+        "can_choose_card_type": False,
+        "activation": "any_time",
+        "rarity": "uncommon"
+    },
+    "Хакер": {
+        "description": "Позволяет подсмотреть все карты выбранного игрока",
+        "effect_type": "peek_cards",
+        "targets": "one_player",
+        "can_choose_card_type": False,
+        "activation": "any_time",
+        "rarity": "rare"
+    }
+}
+
+# События бункера
+BUNKER_EVENTS = {
+    "Проблемы с электричеством": {
+        "description": "Генератор дает сбои! Нужен инженер или электрик для ремонта, иначе все системы жизнеобеспечения будут работать нестабильно.",
+        "severity": "medium",
+        "required_professions": ["Инженер", "Электрик"],
+        "consequences": "Ухудшение условий жизни"
+    },
+    "Утечка радиации": {
+        "description": "Обнаружена утечка радиации в одном из отсеков! Требуется немедленная изоляция зоны и ремонт защитных систем.",
+        "severity": "high",
+        "required_professions": ["Инженер", "Военный", "Учёный"],
+        "consequences": "Угроза здоровью всех жителей"
+    },
+    "Нехватка еды": {
+        "description": "Запасы продовольствия на исходе быстрее, чем планировалось. Нужно найти способ увеличить производство пищи.",
+        "severity": "medium", 
+        "required_professions": ["Повар", "Учёный"],
+        "consequences": "Голод и ослабление организма"
+    },
+    "Проблемы с водой": {
+        "description": "Система очистки воды засорилась. Без ремонта качество воды будет ухудшаться.",
+        "severity": "high",
+        "required_professions": ["Инженер", "Врач"],
+        "consequences": "Отравление и болезни"
+    },
+    "Психологический кризис": {
+        "description": "Длительное пребывание в замкнутом пространстве сказывается на психике жителей. Растет напряженность и конфликты.",
+        "severity": "medium",
+        "required_professions": ["Психолог", "Учитель", "Актёр"],
+        "consequences": "Снижение морали и сплоченности"
+    },
+    "Пожар": {
+        "description": "В одной из комнат начался пожар! Нужно быстро его потушить и восстановить поврежденные системы.",
+        "severity": "high",
+        "required_professions": ["Военный", "Инженер"],
+        "consequences": "Повреждение систем и потеря ресурсов"
+    },
+    "Заболевание": {
+        "description": "Один из жителей серьезно заболел и нуждается в медицинской помощи. Болезнь может быть заразной.",
+        "severity": "medium",
+        "required_professions": ["Врач"],
+        "consequences": "Распространение болезни"
+    },
+    "Поломка систем связи": {
+        "description": "Системы связи с внешним миром вышли из строя. Нужен ремонт, чтобы получать информацию о ситуации снаружи.",
+        "severity": "low",
+        "required_professions": ["Инженер", "Программист"],
+        "consequences": "Изоляция от внешнего мира"
+    },
+    "Нападение извне": {
+        "description": "К бункеру приближается группа вооруженных людей! Нужно решить, как обеспечить защиту.",
+        "severity": "high", 
+        "required_professions": ["Военный", "Юрист"],
+        "consequences": "Угроза безопасности бункера"
+    },
+    "Депрессия жителей": {
+        "description": "Жители бункера впадают в уныние из-за безнадежности ситуации. Нужно поднять моральный дух.",
+        "severity": "low",
+        "required_professions": ["Психолог", "Актёр", "Учитель"],
+        "consequences": "Снижение продуктивности и мотивации"
+    }
+}
+
 # Стандартные секретные комнаты
 STANDARD_SECRET_ROOMS = {
     # Практические и полезные
@@ -241,6 +389,36 @@ def generate_player_cards(allow_hidden_roles: bool = True) -> Dict[str, str]:
     
     return cards
 
+def generate_action_card() -> str:
+    """Генерирует случайную карту действия с учетом редкости"""
+    # Создаем weighted список для редкости
+    weighted_cards = []
+    for card_name, card_info in ACTION_CARDS.items():
+        rarity = card_info.get("rarity", "common")
+        if rarity == "common":
+            weight = 4
+        elif rarity == "uncommon":
+            weight = 2
+        elif rarity == "rare":
+            weight = 1
+        elif rarity == "epic":
+            weight = 0.5
+        else:
+            weight = 1
+        
+        # Добавляем карту в список нужное количество раз
+        for _ in range(int(weight * 10)):
+            weighted_cards.append(card_name)
+    
+    return random.choice(weighted_cards)
+
+def generate_random_event() -> Dict[str, any]:
+    """Генерирует случайное событие для бункера"""
+    event_name = random.choice(list(BUNKER_EVENTS.keys()))
+    event_info = BUNKER_EVENTS[event_name].copy()
+    event_info["name"] = event_name
+    return event_info
+
 class JoinButton(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -306,6 +484,188 @@ class JoinButton(discord.ui.View):
             await self.cog.update_lobby_embed(game.id)
         
         await interaction.followup.send("Вы присоединились к игре!", ephemeral=True)
+
+class CardRevealView(discord.ui.View):
+    """UI для раскрытия карт игрока в личных сообщениях"""
+    
+    def __init__(self, player_id: int, game_id: int, cards: Dict[str, str], bot):
+        super().__init__(timeout=None)  # Никогда не истекает
+        self.player_id = player_id
+        self.game_id = game_id
+        self.cards = cards
+        self.bot = bot
+        
+        # Создаем кнопки для каждой карты
+        self.create_buttons()
+    
+    def create_buttons(self):
+        """Создает кнопки для раскрытия карт"""
+        # Первый ряд - основные характеристики
+        self.add_item(self.create_card_button("profession", "👨‍💼 Профессия", 0))
+        self.add_item(self.create_card_button("health", "❤️ Здоровье", 0))
+        self.add_item(self.create_card_button("age", "🎂 Возраст", 0))
+        self.add_item(self.create_card_button("gender", "⚧️ Пол", 0))
+        
+        # Второй ряд - личная информация
+        self.add_item(self.create_card_button("full_name", "📛 Имя", 1))
+        self.add_item(self.create_card_button("skill", "🛠️ Навык", 1))
+        self.add_item(self.create_card_button("baggage", "🎒 Багаж", 1))
+        
+        # Третий ряд - скрытые карты
+        self.add_item(self.create_card_button("phobia", "👻 Фобия", 2))
+        self.add_item(self.create_card_button("additional_info", "📜 Доп. инфо", 2))
+        self.add_item(self.create_card_button("hidden_role", "🎭 Скр. роль", 2))
+    
+    def create_card_button(self, card_type: str, label: str, row: int):
+        """Создает кнопку для конкретной карты"""
+        button = discord.ui.Button(
+            label=label,
+            custom_id=f"reveal_{self.game_id}_{self.player_id}_{card_type}",
+            style=discord.ButtonStyle.secondary,
+            row=row
+        )
+        
+        async def button_callback(interaction: discord.Interaction):
+            await self.reveal_card(interaction, card_type)
+        
+        button.callback = button_callback
+        return button
+    
+    async def reveal_card(self, interaction: discord.Interaction, card_type: str):
+        """Обрабатывает раскрытие карты"""
+        # Проверяем, что это правильный игрок
+        async with get_async_session() as session:
+            player = await session.execute(
+                select(BunkerPlayer).where(BunkerPlayer.id == self.player_id)
+            )
+            player = player.scalar_one_or_none()
+            
+            if not player or player.user_id != interaction.user.id:
+                await interaction.response.send_message("❌ Это не ваши карты!", ephemeral=True)
+                return
+            
+            # Проверяем статус игры
+            game = await session.execute(
+                select(BunkerGame).where(
+                    and_(
+                        BunkerGame.id == self.game_id,
+                        BunkerGame.status == BunkerGameStatusENUM.RUNNING.value
+                    )
+                )
+            )
+            game = game.scalar_one_or_none()
+            
+            if not game:
+                await interaction.response.send_message("❌ Игра не активна!", ephemeral=True)
+                return
+            
+            # Ищем карту игрока
+            card = await session.execute(
+                select(BunkerPlayerCard).where(
+                    and_(
+                        BunkerPlayerCard.player_id == self.player_id,
+                        BunkerPlayerCard.card_type == card_type  # Используем строку
+                    )
+                )
+            )
+            card = card.scalar_one_or_none()
+            
+            if not card:
+                await interaction.response.send_message("❌ Карта не найдена!", ephemeral=True)
+                return
+            
+            if card.is_revealed:
+                await interaction.response.send_message("❌ Эта карта уже раскрыта!", ephemeral=True)
+                return
+            
+            # Раскрываем карту
+            card.is_revealed = True
+            await session.commit()
+            
+            # Обновляем кнопки
+            for item in self.children:
+                if hasattr(item, 'custom_id') and item.custom_id.endswith(f"_{card_type}"):
+                    item.disabled = True
+                    item.style = discord.ButtonStyle.danger
+                    item.label = f"✅ {item.label.split(' ', 1)[1]}"  # Убираем эмодзи и добавляем галочку
+            
+            # Отправляем уведомление в основной канал
+            announcements_channel = self.bot.get_channel(game.announcements_text_channel_id)
+            
+            card_type_names = {
+                "profession": "Профессия",
+                "health": "Здоровье", 
+                "age": "Возраст",
+                "gender": "Пол",
+                "full_name": "Имя и Фамилия",
+                "skill": "Навык",
+                "baggage": "Багаж",
+                "phobia": "Фобия",
+                "additional_info": "Дополнительная информация",
+                "hidden_role": "Скрытая роль"
+            }
+            
+            embed = discord.Embed(
+                title="🃏 КАРТА РАСКРЫТА!",
+                description=f"{interaction.user.display_name} раскрыл свою карту",
+                color=3447003
+            )
+            embed.add_field(
+                name=f"📋 {card_type_names.get(card_type, card_type.title())}",
+                value=f"**{card.card_name}**",
+                inline=False
+            )
+            embed.set_thumbnail(url=interaction.user.display_avatar.url)
+            
+            await announcements_channel.send(embed=embed)
+            
+            # Логируем раскрытие карты
+            log = BunkerGameLog(
+                game_id=self.game_id,
+                round_number=game.current_round,
+                actor_player_id=self.player_id,
+                action_type=BunkerActionTypeENUM.CARD_REVEALED.value,
+                action_details={
+                    "card_type": card_type,
+                    "card_value": card.card_name
+                }
+            )
+            session.add(log)
+            await session.commit()
+            
+            # Если раскрыто имя и фамилия, меняем никнейм
+            if card_type == "full_name":
+                try:
+                    await interaction.user.edit(nick=card.card_name)
+                except discord.Forbidden:
+                    pass
+            
+            await interaction.response.edit_message(
+                content=f"✅ Карта '{card_type_names.get(card_type, card_type)}' раскрыта!",
+                view=self
+            )
+    
+    async def refresh_buttons(self):
+        """Обновляет состояние кнопок на основе раскрытых карт"""
+        async with get_async_session() as session:
+            # Получаем все карты игрока
+            cards = await session.execute(
+                select(BunkerPlayerCard).where(BunkerPlayerCard.player_id == self.player_id)
+            )
+            cards = cards.scalars().all()
+            
+            revealed_cards = {card.card_type for card in cards if card.is_revealed}  # Убираем .lower()
+            
+            # Обновляем кнопки
+            for item in self.children:
+                if hasattr(item, 'custom_id'):
+                    card_type = item.custom_id.split('_')[-1]
+                    if card_type in revealed_cards:
+                        item.disabled = True
+                        item.style = discord.ButtonStyle.danger
+                        # Убираем эмодзи и добавляем галочку
+                        if not item.label.startswith("✅"):
+                            item.label = f"✅ {item.label.split(' ', 1)[1]}"
 
 class VotingView(discord.ui.View):
     """UI для голосования в личных сообщениях"""
@@ -436,6 +796,502 @@ class VotingView(discord.ui.View):
                 item.disabled = True
             await interaction.edit_original_response(view=self)
 
+class ActionCardView(discord.ui.View):
+    """UI для использования карт действий"""
+    
+    def __init__(self, player_id: int, game_id: int, action_cards: List[str], bot):
+        super().__init__(timeout=None)
+        self.player_id = player_id
+        self.game_id = game_id
+        self.bot = bot
+        
+        # Создаем селект с картами действий игрока
+        if action_cards:
+            options = []
+            for card_name in action_cards:
+                card_info = ACTION_CARDS.get(card_name, {})
+                description = card_info.get("description", "Неизвестный эффект")[:100]
+                options.append(discord.SelectOption(
+                    label=card_name,
+                    description=description,
+                    value=card_name
+                ))
+            
+            card_select = discord.ui.Select(
+                placeholder="Выберите карту действия для использования",
+                options=options,
+                custom_id=f"action_card_{game_id}_{player_id}"
+            )
+            
+            async def card_select_callback(interaction: discord.Interaction):
+                if interaction.user.id != await self.get_user_id():
+                    await interaction.response.send_message("❌ Это не ваши карты!", ephemeral=True)
+                    return
+                
+                card_name = interaction.data['values'][0] if interaction.data['values'] else None
+                if not card_name:
+                    await interaction.response.send_message("❌ Карта не выбрана!", ephemeral=True)
+                    return
+                
+                await self.use_action_card(interaction, card_name)
+            
+            card_select.callback = card_select_callback
+            self.add_item(card_select)
+    
+    async def get_user_id(self):
+        """Получает user_id игрока"""
+        async with get_async_session() as session:
+            player = await session.execute(
+                select(BunkerPlayer).where(BunkerPlayer.id == self.player_id)
+            )
+            player = player.scalar_one_or_none()
+            return player.user_id if player else None
+    
+    async def use_action_card(self, interaction: discord.Interaction, card_name: str):
+        """Обрабатывает использование карты действия"""
+        await interaction.response.defer(ephemeral=True)
+        
+        async with get_async_session() as session:
+            # Получаем игру и игрока
+            game = await session.execute(
+                select(BunkerGame).where(
+                    and_(
+                        BunkerGame.id == self.game_id,
+                        BunkerGame.status == BunkerGameStatusENUM.RUNNING.value
+                    )
+                )
+            )
+            game = game.scalar_one_or_none()
+            
+            if not game:
+                await interaction.followup.send("❌ Игра не активна!", ephemeral=True)
+                return
+            
+            player = await session.execute(
+                select(BunkerPlayer).where(BunkerPlayer.id == self.player_id)
+            )
+            player = player.scalar_one_or_none()
+            
+            if not player or player.is_expelled:
+                await interaction.followup.send("❌ Вы не можете использовать карты!", ephemeral=True)
+                return
+            
+            # Проверяем, что у игрока есть эта карта
+            card = await session.execute(
+                select(BunkerPlayerCard).where(
+                    and_(
+                        BunkerPlayerCard.player_id == self.player_id,
+                        BunkerPlayerCard.card_type == "action_card",
+                        BunkerPlayerCard.card_name == card_name,
+                        BunkerPlayerCard.is_revealed == False  # Неиспользованная карта
+                    )
+                )
+            )
+            card = card.scalar_one_or_none()
+            
+            if not card:
+                await interaction.followup.send("❌ У вас нет этой карты или она уже использована!", ephemeral=True)
+                return
+            
+            # Применяем эффект карты
+            success = await self.apply_card_effect(card_name, game, player, session, interaction)
+            
+            if success:
+                # Помечаем карту как использованную
+                card.is_revealed = True
+                await session.commit()
+                
+                # Удаляем кнопку использованной карты
+                new_options = []
+                for item in self.children:
+                    if hasattr(item, 'options'):
+                        for option in item.options:
+                            if option.value != card_name:
+                                new_options.append(option)
+                
+                # Обновляем селект
+                if new_options:
+                    self.clear_items()
+                    new_select = discord.ui.Select(
+                        placeholder="Выберите карту действия для использования",
+                        options=new_options,
+                        custom_id=f"action_card_{self.game_id}_{self.player_id}"
+                    )
+                    
+                    async def new_callback(interaction: discord.Interaction):
+                        card_name = interaction.data['values'][0] if interaction.data['values'] else None
+                        await self.use_action_card(interaction, card_name)
+                    
+                    new_select.callback = new_callback
+                    self.add_item(new_select)
+                else:
+                    # Все карты использованы
+                    self.clear_items()
+                    self.add_item(discord.ui.Button(
+                        label="Все карты действий использованы",
+                        disabled=True,
+                        style=discord.ButtonStyle.secondary
+                    ))
+                
+                await interaction.followup.send(f"✅ Карта '{card_name}' успешно использована!", ephemeral=True)
+    
+    async def apply_card_effect(self, card_name: str, game: BunkerGame, player: BunkerPlayer, session: AsyncSession, interaction: discord.Interaction):
+        """Применяет эффект карты действия"""
+        card_info = ACTION_CARDS.get(card_name, {})
+        effect_type = card_info.get("effect_type")
+        
+        announcements_channel = self.bot.get_channel(game.announcements_text_channel_id)
+        user = self.bot.get_user(player.user_id)
+        
+        try:
+            if effect_type == "change_all_players":
+                await self.effect_change_all_players(game, session, announcements_channel, user, card_name)
+            elif effect_type == "swap_cards":
+                await self.effect_swap_cards(game, session, announcements_channel, user, card_name, interaction)
+            elif effect_type == "force_reveal":
+                await self.effect_force_reveal(game, session, announcements_channel, user, card_name, interaction)
+            elif effect_type == "immunity":
+                await self.effect_immunity(game, player, session, announcements_channel, user, card_name, interaction)
+            elif effect_type == "trigger_event":
+                await self.effect_trigger_event(game, session, announcements_channel, user, card_name)
+            elif effect_type == "increase_capacity":
+                await self.effect_increase_capacity(game, session, announcements_channel, user, card_name)
+            elif effect_type == "replace_all_cards":
+                await self.effect_replace_all_cards(game, session, announcements_channel, user, card_name)
+            elif effect_type == "heal_player":
+                await self.effect_heal_player(game, session, announcements_channel, user, card_name, interaction)
+            elif effect_type == "sicken_player":
+                await self.effect_sicken_player(game, session, announcements_channel, user, card_name, interaction)
+            elif effect_type == "peek_cards":
+                await self.effect_peek_cards(game, session, user, card_name, interaction)
+            else:
+                await interaction.followup.send("❌ Неизвестный эффект карты!", ephemeral=True)
+                return False
+            
+            # Логируем использование карты
+            log = BunkerGameLog(
+                game_id=game.id,
+                round_number=game.current_round,
+                actor_player_id=player.id,
+                action_type=BunkerActionTypeENUM.ACTION_CARD_PLAYED.value,
+                action_details={
+                    "card_name": card_name,
+                    "effect_type": effect_type
+                }
+            )
+            session.add(log)
+            await session.commit()
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Ошибка при применении эффекта карты {card_name}: {e}")
+            await interaction.followup.send("❌ Произошла ошибка при использовании карты!", ephemeral=True)
+            return False
+    
+    async def effect_change_all_players(self, game, session, channel, user, card_name):
+        """Эффект: Смена реальности - меняет характеристику у всех игроков"""
+        # Получаем всех живых игроков
+        players = await session.execute(
+            select(BunkerPlayer).where(
+                and_(
+                    BunkerPlayer.game_id == game.id,
+                    BunkerPlayer.is_expelled == False
+                )
+            )
+        )
+        players = players.scalars().all()
+        
+        # Случайно выбираем тип карты для изменения
+        card_types = ["profession", "skill", "baggage"]
+        chosen_type = random.choice(card_types)
+        
+        type_names = {
+            "profession": "профессии",
+            "skill": "навыки", 
+            "baggage": "багаж"
+        }
+        
+        changed_players = []
+        for player in players:
+            # Находим карту этого типа у игрока
+            card = await session.execute(
+                select(BunkerPlayerCard).where(
+                    and_(
+                        BunkerPlayerCard.player_id == player.id,
+                        BunkerPlayerCard.card_type == chosen_type
+                    )
+                )
+            )
+            card = card.scalar_one_or_none()
+            
+            if card:
+                # Генерируем новое значение
+                if chosen_type == "profession":
+                    new_value = random.choice(PROFESSIONS)
+                elif chosen_type == "skill":
+                    new_value = random.choice(SKILLS)
+                elif chosen_type == "baggage":
+                    new_value = random.choice(BAGGAGE)
+                
+                old_value = card.card_name
+                card.card_name = new_value
+                
+                player_user = self.bot.get_user(player.user_id)
+                if player_user:
+                    changed_players.append(f"{player_user.display_name}: {old_value} → {new_value}")
+        
+        await session.commit()
+        
+        # Отправляем уведомление
+        embeds = get_embeds("bunker/action_card_used",
+            playerName=user.display_name,
+            cardName=card_name,
+            cardEffect=f"Все игроки получили новые {type_names[chosen_type]}",
+            cardDetails="\n".join(changed_players) if changed_players else "Изменений не произошло"
+        )
+        await channel.send(embeds=embeds)
+    
+    async def effect_swap_cards(self, game, session, channel, user, card_name, interaction):
+        """Эффект: Обмен картами между двумя игроками"""
+        # Эта функция требует выбора игроков, пока упростим
+        embeds = get_embeds("bunker/action_card_used",
+            playerName=user.display_name,
+            cardName=card_name,
+            cardEffect="Запущен процесс обмена характеристиками",
+            cardDetails="Функция будет доработана в следующем обновлении"
+        )
+        await channel.send(embeds=embeds)
+    
+    async def effect_force_reveal(self, game, session, channel, user, card_name, interaction):
+        """Эффект: Принудительное раскрытие карты"""
+        # Получаем случайного игрока со скрытыми картами
+        players = await session.execute(
+            select(BunkerPlayer).where(
+                and_(
+                    BunkerPlayer.game_id == game.id,
+                    BunkerPlayer.is_expelled == False,
+                    BunkerPlayer.id != await self.get_player_from_user_id(interaction.user.id)
+                )
+            )
+        )
+        players = players.scalars().all()
+        
+        target_player = random.choice(players) if players else None
+        if not target_player:
+            return
+        
+        # Находим скрытую карту
+        hidden_cards = await session.execute(
+            select(BunkerPlayerCard).where(
+                and_(
+                    BunkerPlayerCard.player_id == target_player.id,
+                    BunkerPlayerCard.is_hidden == True,
+                    BunkerPlayerCard.is_revealed == False
+                )
+            )
+        )
+        hidden_cards = hidden_cards.scalars().all()
+        
+        if hidden_cards:
+            revealed_card = random.choice(hidden_cards)
+            revealed_card.is_revealed = True
+            
+            target_user = self.bot.get_user(target_player.user_id)
+            
+            embeds = get_embeds("bunker/action_card_used",
+                playerName=user.display_name,
+                cardName=card_name,
+                cardEffect=f"Раскрыта тайна игрока {target_user.display_name}",
+                cardDetails=f"{revealed_card.card_type}: {revealed_card.card_name}"
+            )
+            await channel.send(embeds=embeds)
+    
+    async def effect_immunity(self, game, player, session, channel, user, card_name, interaction):
+        """Эффект: Иммунитет от изгнания"""
+        # Добавляем иммунитет в настройки игры
+        settings = game.game_settings or {}
+        immune_players = settings.get("immune_players", [])
+        immune_players.append(player.id)
+        settings["immune_players"] = immune_players
+        game.game_settings = settings
+        
+        embeds = get_embeds("bunker/action_card_used",
+            playerName=user.display_name,
+            cardName=card_name,
+            cardEffect=f"{user.display_name} получил иммунитет от изгнания",
+            cardDetails="Действует до следующего голосования"
+        )
+        await channel.send(embeds=embeds)
+    
+    async def effect_trigger_event(self, game, session, channel, user, card_name):
+        """Эффект: Вызвать событие в бункере"""
+        event_name = random.choice(list(BUNKER_EVENTS.keys()))
+        event_info = BUNKER_EVENTS[event_name]
+        
+        # Логируем событие
+        log = BunkerGameLog(
+            game_id=game.id,
+            round_number=game.current_round,
+            action_type=BunkerActionTypeENUM.EVENT_TRIGGERED.value,
+            action_details={
+                "event_name": event_name,
+                "event_description": event_info["description"],
+                "triggered_by_card": card_name
+            }
+        )
+        session.add(log)
+        
+        embeds = get_embeds("bunker/event",
+            eventName=event_name,
+            eventDescription=event_info["description"],
+            requiredProfessions=", ".join(event_info["required_professions"]),
+            consequences=event_info["consequences"],
+            triggeredBy=f"Карта действия '{card_name}' игрока {user.display_name}"
+        )
+        await channel.send(embeds=embeds)
+    
+    async def effect_increase_capacity(self, game, session, channel, user, card_name):
+        """Эффект: Увеличить вместимость бункера"""
+        game.bunker_capacity += 1
+        
+        embeds = get_embeds("bunker/action_card_used",
+            playerName=user.display_name,
+            cardName=card_name,
+            cardEffect="Вместимость бункера увеличена на 1 место",
+            cardDetails=f"Теперь в бункере может поместиться {game.bunker_capacity} человек"
+        )
+        await channel.send(embeds=embeds)
+    
+    async def effect_replace_all_cards(self, game, session, channel, user, card_name):
+        """Эффект: Общая амнезия - заменить одну характеристику у всех"""
+        # Аналогично change_all_players, но с заменой
+        await self.effect_change_all_players(game, session, channel, user, "Общая амнезия")
+    
+    async def effect_heal_player(self, game, session, channel, user, card_name, interaction):
+        """Эффект: Исцелить игрока"""
+        # Пока упрощенная версия - лечим самого игрока
+        player_card = await session.execute(
+            select(BunkerPlayerCard).where(
+                and_(
+                    BunkerPlayerCard.player_id == self.player_id,
+                    BunkerPlayerCard.card_type == "health"
+                )
+            )
+        )
+        player_card = player_card.scalar_one_or_none()
+        
+        if player_card:
+            old_health = player_card.card_name
+            player_card.card_name = "Отличное здоровье"
+            
+            embeds = get_embeds("bunker/action_card_used",
+                playerName=user.display_name,
+                cardName=card_name,
+                cardEffect=f"Здоровье улучшено",
+                cardDetails=f"{old_health} → Отличное здоровье"
+            )
+            await channel.send(embeds=embeds)
+    
+    async def effect_sicken_player(self, game, session, channel, user, card_name, interaction):
+        """Эффект: Ухудшить здоровье игрока"""
+        # Выбираем случайного игрока
+        players = await session.execute(
+            select(BunkerPlayer).where(
+                and_(
+                    BunkerPlayer.game_id == game.id,
+                    BunkerPlayer.is_expelled == False
+                )
+            )
+        )
+        players = players.scalars().all()
+        
+        target_player = random.choice(players) if players else None
+        if target_player:
+            health_card = await session.execute(
+                select(BunkerPlayerCard).where(
+                    and_(
+                        BunkerPlayerCard.player_id == target_player.id,
+                        BunkerPlayerCard.card_type == "health"
+                    )
+                )
+            )
+            health_card = health_card.scalar_one_or_none()
+            
+            if health_card:
+                old_health = health_card.card_name
+                health_card.card_name = "Хроническое заболевание"
+                
+                target_user = self.bot.get_user(target_player.user_id)
+                
+                embeds = get_embeds("bunker/action_card_used",
+                    playerName=user.display_name,
+                    cardName=card_name,
+                    cardEffect=f"Здоровье игрока {target_user.display_name} ухудшено",
+                    cardDetails=f"{old_health} → Хроническое заболевание"
+                )
+                await channel.send(embeds=embeds)
+    
+    async def effect_peek_cards(self, game, session, user, card_name, interaction):
+        """Эффект: Подсмотреть карты игрока"""
+        # Выбираем случайного игрока
+        players = await session.execute(
+            select(BunkerPlayer).where(
+                and_(
+                    BunkerPlayer.game_id == game.id,
+                    BunkerPlayer.is_expelled == False,
+                    BunkerPlayer.id != self.player_id
+                )
+            )
+        )
+        players = players.scalars().all()
+        
+        target_player = random.choice(players) if players else None
+        if target_player:
+            # Получаем все карты игрока
+            cards = await session.execute(
+                select(BunkerPlayerCard).where(BunkerPlayerCard.player_id == target_player.id)
+            )
+            cards = cards.scalars().all()
+            
+            target_user = self.bot.get_user(target_player.user_id)
+            cards_info = []
+            for card in cards:
+                status = "Раскрыта" if card.is_revealed else "Скрыта"
+                cards_info.append(f"{card.card_type}: {card.card_name} ({status})")
+            
+            # Отправляем информацию только игроку, использовавшему карту
+            embed = discord.Embed(
+                title=f"🔍 Карты игрока {target_user.display_name}",
+                description="\n".join(cards_info),
+                color=0x9932cc
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
+            
+            # В общий чат только уведомление
+            announcements_channel = self.bot.get_channel(game.announcements_text_channel_id)
+            embeds = get_embeds("bunker/action_card_used",
+                playerName=user.display_name,
+                cardName=card_name,
+                cardEffect=f"Подсмотрел карты игрока {target_user.display_name}",
+                cardDetails="Информация отправлена в личные сообщения"
+            )
+            await announcements_channel.send(embeds=embeds)
+    
+    async def get_player_from_user_id(self, user_id: int):
+        """Получает player_id по user_id"""
+        async with get_async_session() as session:
+            player = await session.execute(
+                select(BunkerPlayer).where(
+                    and_(
+                        BunkerPlayer.game_id == self.game_id,
+                        BunkerPlayer.user_id == user_id
+                    )
+                )
+            )
+            player = player.scalar_one_or_none()
+            return player.id if player else None
+
 class BunkerCog(discord.Cog):
     """Игра Бункер - выживание в постапокалипсисе"""
     
@@ -455,9 +1311,15 @@ class BunkerCog(discord.Cog):
     @bunker_group.command(name="create")
     @app_commands.describe(
         capacity="Вместимость бункера (по умолчанию 10)",
-        catastrophe="Тип катастрофы (по умолчанию случайная)"
+        catastrophe="Тип катастрофы (по умолчанию случайная)",
+        action_cards="Выдавать ли карты действий игрокам (по умолчанию True)",
+        events="Включить ли случайные события в бункере (по умолчанию True)"
     )
-    async def bunker_create(self, ctx: discord.ApplicationContext, capacity: Optional[int] = 10, catastrophe: Optional[str] = None):
+    async def bunker_create(self, ctx: discord.ApplicationContext, 
+                           capacity: Optional[int] = 10, 
+                           catastrophe: Optional[str] = None,
+                           action_cards: Optional[bool] = True,
+                           events: Optional[bool] = True):
         """Создать новую игру Бункер"""
         await ctx.defer(ephemeral=True)
         
@@ -532,10 +1394,14 @@ class BunkerCog(discord.Cog):
                     "round_timer": 300,  # 5 минут
                     "vote_timer": 60,    # 1 минута
                     "allow_hidden_roles": True,
-                    "allow_dynamic_events": True,
+                    "allow_dynamic_events": events,
+                    "action_cards_enabled": action_cards,
                     "secret_room_enabled": secret_room is not None,
                     "secret_room_opens_round": 3 if secret_room else None,
-                    "catastrophe_description": catastrophe_info["description"]
+                    "catastrophe_description": catastrophe_info["description"],
+                    "events_per_game": 2 if events else 0,
+                    "event_min_round": 2,  # События начинаются с 2-го раунда
+                    "immune_players": []  # Список игроков с иммунитетом
                 }
             )
             
@@ -730,17 +1596,34 @@ class BunkerCog(discord.Cog):
                     allow_hidden_roles=game.game_settings.get("allow_hidden_roles", True)
                 )
                 
+                # Генерируем карту действия если включено
+                action_card = None
+                if game.game_settings.get("action_cards_enabled", False):
+                    action_card = generate_action_card()
+                    cards["action_card"] = action_card
+                
                 # Сохраняем карты в БД
                 for card_type, card_value in cards.items():
+                    is_hidden = card_type in ["phobia", "additional_info", "health"]
                     card = BunkerPlayerCard(
                         player_id=player.id,
-                        card_type=BunkerCardTypeENUM[card_type.upper()].value,
-                        card_name=card_value,
-                        is_hidden=card_type in ["phobia", "additional_info", "health"]
+                        card_type=card_type,  # Используем строку
+                        card_name=card_value,  # Используем простое поле
+                        is_hidden=is_hidden
                     )
                     session.add(card)
                 
-                # Отправляем карты игроку в ЛС
+                await session.commit()
+                
+                # Создаем View с кнопками для раскрытия карт
+                card_reveal_view = CardRevealView(player.id, game.id, cards, self.bot)
+                
+                # Создаем View для карт действий если есть
+                action_card_view = None
+                if action_card:
+                    action_card_view = ActionCardView(player.id, game.id, [action_card], self.bot)
+                
+                # Отправляем карты игроку в ЛС с кнопками
                 embeds = get_embeds("bunker/player_cards_dm",
                     playerName=user.display_name,
                     professionName=cards["profession"],
@@ -752,10 +1635,28 @@ class BunkerCog(discord.Cog):
                     itemName=cards["baggage"],
                     traitName=cards["phobia"],
                     extraInfo=cards["additional_info"],
-                    hiddenRole=cards["hidden_role"]
+                    hiddenRole=cards["hidden_role"],
+                    actionCard=action_card or "Нет"
                 )
                 try:
-                    await user.send(embeds=embeds)
+                    dm_message = await user.send(embeds=embeds, view=card_reveal_view)
+                    # Сохраняем ID сообщения с кнопками
+                    player.dm_cards_message_id = dm_message.id
+                    
+                    # Отправляем карты действий отдельным сообщением если есть
+                    if action_card_view:
+                        action_embed = discord.Embed(
+                            title="🎴 Ваши карты действий",
+                            description="Используйте эти карты в нужный момент для изменения хода игры!",
+                            color=0x9932cc
+                        )
+                        action_embed.add_field(
+                            name=f"🪄 {action_card}",
+                            value=ACTION_CARDS[action_card]["description"],
+                            inline=False
+                        )
+                        await user.send(embed=action_embed, view=action_card_view)
+                        
                 except discord.Forbidden:
                     await announcements_channel.send(f"{user.mention}, я не могу отправить вам карты в личные сообщения! Пожалуйста, включите личные сообщения от участников сервера.")
                 
@@ -771,7 +1672,8 @@ class BunkerCog(discord.Cog):
                     itemName=cards["baggage"],
                     traitName="Скрыто",
                     extraInfo="Скрыто",
-                    hiddenRole="Скрыто"
+                    hiddenRole="Скрыто",
+                    actionCard="Есть карта действия" if action_card else "Нет карт действий"
                 )
                 message = await player_cards_channel.send(embeds=embeds)
                 
@@ -1230,13 +2132,47 @@ class BunkerCog(discord.Cog):
             max_votes = max(vote_count.values())
             expelled_candidates = [pid for pid, count in vote_count.items() if count == max_votes]
             
+            # Проверяем иммунитет игроков
+            immune_players = game.game_settings.get("immune_players", [])
+            non_immune_candidates = [pid for pid in expelled_candidates if pid not in immune_players]
+            
             if len(expelled_candidates) > 1:
-                # Ничья - можно реализовать дополнительную логику
-                await ctx.followup.send(f"⚖️ Ничья в голосовании! {len(expelled_candidates)} игроков получили по {max_votes} голосов. Требуется переголосование.", ephemeral=True)
+                if non_immune_candidates:
+                    # Если есть кандидаты без иммунитета, изгоняем одного из них
+                    expelled_candidates = non_immune_candidates
+                    if len(expelled_candidates) > 1:
+                        await ctx.followup.send(f"⚖️ Ничья в голосовании среди игроков без иммунитета! {len(expelled_candidates)} игроков получили по {max_votes} голосов. Требуется переголосование.", ephemeral=True)
+                        return
+                elif all(pid in immune_players for pid in expelled_candidates):
+                    # Все кандидаты имеют иммунитет
+                    await ctx.followup.send(f"🛡️ Все кандидаты на изгнание имеют иммунитет! Никто не изгнан.", ephemeral=True)
+                    return
+                else:
+                    # Обычная ничья
+                    await ctx.followup.send(f"⚖️ Ничья в голосовании! {len(expelled_candidates)} игроков получили по {max_votes} голосов. Требуется переголосование.", ephemeral=True)
+                    return
+            
+            expelled_player_id = expelled_candidates[0]
+            
+            # Проверяем иммунитет изгоняемого игрока
+            if expelled_player_id in immune_players:
+                expelled_player = await session.execute(
+                    select(BunkerPlayer).where(BunkerPlayer.id == expelled_player_id)
+                )
+                expelled_player = expelled_player.scalar_one_or_none()
+                expelled_user = self.bot.get_user(expelled_player.user_id) if expelled_player else None
+                
+                await ctx.followup.send(f"🛡️ {expelled_user.display_name if expelled_user else 'Игрок'} имеет иммунитет от изгнания! Никто не изгнан.", ephemeral=True)
+                
+                # Убираем иммунитет (одноразовый)
+                immune_players.remove(expelled_player_id)
+                settings = game.game_settings.copy()
+                settings["immune_players"] = immune_players
+                game.game_settings = settings
+                await session.commit()
                 return
             
             # Изгоняем игрока
-            expelled_player_id = expelled_candidates[0]
             expelled_player = await session.execute(
                 select(BunkerPlayer).where(BunkerPlayer.id == expelled_player_id)
             )
@@ -1452,6 +2388,63 @@ class BunkerCog(discord.Cog):
             
             await ctx.followup.send(embed=embed, ephemeral=True)
 
+    @leader_group.command(name="trigger_event")
+    async def bunker_trigger_event(self, ctx: discord.ApplicationContext):
+        """Вызвать случайное событие в бункере"""
+        await ctx.defer(ephemeral=True)
+        
+        async with get_async_session() as session:
+            # Проверяем права
+            game = await session.execute(
+                select(BunkerGame).where(
+                    and_(
+                        BunkerGame.guild_id == ctx.guild_id,
+                        BunkerGame.leader_id == ctx.author.id,
+                        BunkerGame.status == BunkerGameStatusENUM.RUNNING.value
+                    )
+                )
+            )
+            game = game.scalar_one_or_none()
+            
+            if not game:
+                await ctx.followup.send("❌ У вас нет прав для управления игрой!", ephemeral=True)
+                return
+            
+            # Генерируем событие
+            event_info = generate_random_event()
+            
+            # Отправляем в основной канал
+            announcements_channel = self.bot.get_channel(game.announcements_text_channel_id)
+            
+            embeds = get_embeds("bunker/event",
+                eventName=event_info["name"],
+                eventDescription=event_info["description"],
+                eventSeverity=event_info["severity"].upper(),
+                requiredProfessions=", ".join(event_info["required_professions"]),
+                consequences=event_info["consequences"],
+                triggeredBy="Ведущий игры"
+            )
+            await announcements_channel.send(embeds=embeds)
+            
+            # Логируем событие
+            log = BunkerGameLog(
+                game_id=game.id,
+                round_number=game.current_round,
+                action_type=BunkerActionTypeENUM.EVENT_TRIGGERED.value,
+                action_details={
+                    "event_name": event_info["name"],
+                    "event_description": event_info["description"],
+                    "severity": event_info["severity"],
+                    "required_professions": event_info["required_professions"],
+                    "consequences": event_info["consequences"],
+                    "triggered_by": "leader"
+                }
+            )
+            session.add(log)
+            await session.commit()
+            
+            await ctx.followup.send(f"✅ Событие '{event_info['name']}' активировано!", ephemeral=True)
+
     @leader_group.command(name="next_round")
     async def bunker_next_round(self, ctx: discord.ApplicationContext):
         """Начать следующий раунд обсуждения"""
@@ -1491,6 +2484,12 @@ class BunkerCog(discord.Cog):
             
             # Увеличиваем номер раунда
             game.current_round += 1
+            
+            # Сбрасываем иммунитеты после каждого раунда
+            settings = game.game_settings or {}
+            settings["immune_players"] = []
+            game.game_settings = settings
+            
             await session.commit()
             
             # Отправляем сообщение о новом раунде
@@ -1535,6 +2534,57 @@ class BunkerCog(discord.Cog):
                         "event_type": "secret_room_revealed",
                         "room_name": secret_room["name"],
                         "room_description": secret_room["description"]
+                    }
+                )
+                session.add(log)
+                await session.commit()
+            
+            # Автоматическая генерация событий
+            events_enabled = game.game_settings.get("allow_dynamic_events", False)
+            min_event_round = game.game_settings.get("event_min_round", 2)
+            events_per_game = game.game_settings.get("events_per_game", 2)
+            
+            # Считаем сколько событий уже было
+            existing_events = await session.execute(
+                select(BunkerGameLog).where(
+                    and_(
+                        BunkerGameLog.game_id == game.id,
+                        BunkerGameLog.action_type == BunkerActionTypeENUM.EVENT_TRIGGERED.value
+                    )
+                )
+            )
+            existing_events_count = len(existing_events.scalars().all())
+            
+            # Генерируем событие с определенной вероятностью
+            if (events_enabled and 
+                game.current_round >= min_event_round and 
+                existing_events_count < events_per_game and
+                random.random() < 0.4):  # 40% шанс на событие каждый раунд
+                
+                event_info = generate_random_event()
+                
+                embeds = get_embeds("bunker/event",
+                    eventName=event_info["name"],
+                    eventDescription=event_info["description"],
+                    eventSeverity=event_info["severity"].upper(),
+                    requiredProfessions=", ".join(event_info["required_professions"]),
+                    consequences=event_info["consequences"],
+                    triggeredBy="Автоматическая система бункера"
+                )
+                await announcements_channel.send(embeds=embeds)
+                
+                # Логируем событие
+                log = BunkerGameLog(
+                    game_id=game.id,
+                    round_number=game.current_round,
+                    action_type=BunkerActionTypeENUM.EVENT_TRIGGERED.value,
+                    action_details={
+                        "event_name": event_info["name"],
+                        "event_description": event_info["description"],
+                        "severity": event_info["severity"],
+                        "required_professions": event_info["required_professions"],
+                        "consequences": event_info["consequences"],
+                        "triggered_by": "automatic"
                     }
                 )
                 session.add(log)
@@ -1593,7 +2643,7 @@ class BunkerCog(discord.Cog):
                 select(BunkerPlayerCard).where(
                     and_(
                         BunkerPlayerCard.player_id == player.id,
-                        BunkerPlayerCard.card_type == card_type.upper()
+                        BunkerPlayerCard.card_type == card_type  # Используем строку напрямую
                     )
                 )
             )
@@ -1666,6 +2716,245 @@ class BunkerCog(discord.Cog):
                     pass
             
             await ctx.followup.send(f"✅ Карта '{card_type_names.get(card_type, card_type)}' раскрыта!", ephemeral=True)
+
+    @leader_group.command(name="test_card_buttons")
+    async def bunker_test_card_buttons(self, ctx: discord.ApplicationContext):
+        """Тестовая команда для отправки кнопок раскрытия карт"""
+        await ctx.defer(ephemeral=True)
+        
+        async with get_async_session() as session:
+            # Проверяем права
+            game = await session.execute(
+                select(BunkerGame).where(
+                    and_(
+                        BunkerGame.guild_id == ctx.guild_id,
+                        BunkerGame.leader_id == ctx.author.id,
+                        BunkerGame.status == BunkerGameStatusENUM.RUNNING.value
+                    )
+                )
+            )
+            game = game.scalar_one_or_none()
+            
+            if not game:
+                await ctx.followup.send("❌ У вас нет прав для управления игрой или игра не активна!", ephemeral=True)
+                return
+            
+            # Ищем игрока ведущего
+            player = await session.execute(
+                select(BunkerPlayer).where(
+                    and_(
+                        BunkerPlayer.game_id == game.id,
+                        BunkerPlayer.user_id == ctx.author.id
+                    )
+                )
+            )
+            player = player.scalar_one_or_none()
+            
+            if not player:
+                await ctx.followup.send("❌ Вы не участвуете в игре!", ephemeral=True)
+                return
+            
+            # Получаем карты игрока
+            cards = await session.execute(
+                select(BunkerPlayerCard).where(BunkerPlayerCard.player_id == player.id)
+            )
+            cards = cards.scalars().all()
+            
+            if not cards:
+                await ctx.followup.send("❌ У вас нет карт!", ephemeral=True)
+                return
+            
+            # Собираем карты в словарь
+            cards_dict = {card.card_type: card.card_name for card in cards}
+            
+            # Создаем View с кнопками
+            card_reveal_view = CardRevealView(player.id, game.id, cards_dict, self.bot)
+            
+            # Обновляем состояние кнопок
+            await card_reveal_view.refresh_buttons()
+            
+            # Отправляем тестовое сообщение
+            embeds = get_embeds("bunker/player_cards_dm",
+                playerName=ctx.author.display_name,
+                professionName=cards_dict.get("profession", "Неизвестно"),
+                healthStatus=cards_dict.get("health", "Неизвестно"),
+                age=cards_dict.get("age", "Неизвестно"),
+                gender=cards_dict.get("gender", "Неизвестно"),
+                fullName=cards_dict.get("full_name", "Неизвестно"),
+                skillName=cards_dict.get("skill", "Неизвестно"),
+                itemName=cards_dict.get("baggage", "Неизвестно"),
+                traitName=cards_dict.get("phobia", "Неизвестно"),
+                extraInfo=cards_dict.get("additional_info", "Неизвестно"),
+                hiddenRole=cards_dict.get("hidden_role", "Нет")
+            )
+            
+            try:
+                await ctx.author.send(content="🧪 **ТЕСТ:** Обновленное сообщение с кнопками раскрытия карт", embeds=embeds, view=card_reveal_view)
+                await ctx.followup.send("✅ Тестовое сообщение с кнопками отправлено в ЛС!", ephemeral=True)
+            except discord.Forbidden:
+                await ctx.followup.send("❌ Не удалось отправить сообщение в ЛС!", ephemeral=True)
+
+    @bunker_group.command(name="use_action")
+    async def bunker_use_action(self, ctx: discord.ApplicationContext):
+        """Использовать карту действия"""
+        await ctx.defer(ephemeral=True)
+        
+        async with get_async_session() as session:
+            # Ищем активную игру
+            game = await session.execute(
+                select(BunkerGame).where(
+                    and_(
+                        BunkerGame.guild_id == ctx.guild_id,
+                        BunkerGame.status == BunkerGameStatusENUM.RUNNING.value
+                    )
+                )
+            )
+            game = game.scalar_one_or_none()
+            
+            if not game:
+                await ctx.followup.send("❌ Активная игра не найдена!", ephemeral=True)
+                return
+            
+            # Ищем игрока
+            player = await session.execute(
+                select(BunkerPlayer).where(
+                    and_(
+                        BunkerPlayer.game_id == game.id,
+                        BunkerPlayer.user_id == ctx.author.id,
+                        BunkerPlayer.is_expelled == False
+                    )
+                )
+            )
+            player = player.scalar_one_or_none()
+            
+            if not player:
+                await ctx.followup.send("❌ Вы не участвуете в игре или уже изгнаны!", ephemeral=True)
+                return
+            
+            # Получаем неиспользованные карты действий игрока
+            action_cards = await session.execute(
+                select(BunkerPlayerCard).where(
+                    and_(
+                        BunkerPlayerCard.player_id == player.id,
+                        BunkerPlayerCard.card_type == "action_card",
+                        BunkerPlayerCard.is_revealed == False  # Неиспользованные
+                    )
+                )
+            )
+            action_cards = action_cards.scalars().all()
+            
+            if not action_cards:
+                await ctx.followup.send("❌ У вас нет доступных карт действий!", ephemeral=True)
+                return
+            
+            # Создаем список названий карт
+            card_names = [card.card_name for card in action_cards]
+            
+            # Создаем View для выбора карты
+            action_view = ActionCardView(player.id, game.id, card_names, self.bot)
+            
+            embed = discord.Embed(
+                title="🎴 Использование карт действий",
+                description="Выберите карту действия для использования из выпадающего списка ниже:",
+                color=0x9932cc
+            )
+            
+            for card in action_cards:
+                card_info = ACTION_CARDS.get(card.card_name, {})
+                embed.add_field(
+                    name=f"🪄 {card.card_name}",
+                    value=card_info.get("description", "Описание недоступно"),
+                    inline=False
+                )
+            
+            embed.set_footer(text="После использования карта будет удалена из вашего инвентаря")
+            
+            await ctx.followup.send(embed=embed, view=action_view, ephemeral=True)
+
+    @bunker_group.command(name="my_actions")
+    async def bunker_my_actions(self, ctx: discord.ApplicationContext):
+        """Показать ваши карты действий"""
+        await ctx.defer(ephemeral=True)
+        
+        async with get_async_session() as session:
+            # Ищем активную игру
+            game = await session.execute(
+                select(BunkerGame).where(
+                    and_(
+                        BunkerGame.guild_id == ctx.guild_id,
+                        BunkerGame.status == BunkerGameStatusENUM.RUNNING.value
+                    )
+                )
+            )
+            game = game.scalar_one_or_none()
+            
+            if not game:
+                await ctx.followup.send("❌ Активная игра не найдена!", ephemeral=True)
+                return
+            
+            # Ищем игрока
+            player = await session.execute(
+                select(BunkerPlayer).where(
+                    and_(
+                        BunkerPlayer.game_id == game.id,
+                        BunkerPlayer.user_id == ctx.author.id
+                    )
+                )
+            )
+            player = player.scalar_one_or_none()
+            
+            if not player:
+                await ctx.followup.send("❌ Вы не участвуете в игре!", ephemeral=True)
+                return
+            
+            # Получаем все карты действий игрока
+            action_cards = await session.execute(
+                select(BunkerPlayerCard).where(
+                    and_(
+                        BunkerPlayerCard.player_id == player.id,
+                        BunkerPlayerCard.card_type == "action_card"
+                    )
+                )
+            )
+            action_cards = action_cards.scalars().all()
+            
+            embed = discord.Embed(
+                title="🎴 Ваши карты действий",
+                color=0x9932cc
+            )
+            
+            if not action_cards:
+                embed.description = "У вас нет карт действий в этой игре."
+            else:
+                available_cards = []
+                used_cards = []
+                
+                for card in action_cards:
+                    card_info = ACTION_CARDS.get(card.card_name, {})
+                    card_desc = card_info.get("description", "Описание недоступно")
+                    
+                    if card.is_revealed:  # Использованная карта
+                        used_cards.append(f"~~{card.card_name}~~ - {card_desc}")
+                    else:  # Доступная карта
+                        available_cards.append(f"**{card.card_name}** - {card_desc}")
+                
+                if available_cards:
+                    embed.add_field(
+                        name="✅ Доступные карты",
+                        value="\n".join(available_cards),
+                        inline=False
+                    )
+                
+                if used_cards:
+                    embed.add_field(
+                        name="❌ Использованные карты",
+                        value="\n".join(used_cards),
+                        inline=False
+                    )
+                
+                embed.set_footer(text="Используйте /bunker use_action для активации карты")
+            
+            await ctx.followup.send(embed=embed, ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(BunkerCog(bot)) 

@@ -262,6 +262,8 @@ class BunkerPlayer(Base):
     join_time: Mapped[int] = mapped_column(BigInteger, default=lambda: int(datetime.now().timestamp()))
     # Связь для хранения эмбеда с картами этого игрока в #карты-игроков
     cards_message_id: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    # ID сообщения с кнопками раскрытия карт в ЛС игрока
+    dm_cards_message_id: Mapped[int] = mapped_column(BigInteger, nullable=True)
 
 
 class BunkerCardDefinition(Base):
@@ -285,7 +287,12 @@ class BunkerPlayerCard(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     player_id: Mapped[int] = mapped_column(ForeignKey("bunker_player.id", ondelete="CASCADE"))
-    card_definition_id: Mapped[int] = mapped_column(ForeignKey("bunker_card_definition.id", ondelete="CASCADE"))
+    card_definition_id: Mapped[int] = mapped_column(ForeignKey("bunker_card_definition.id", ondelete="CASCADE"), nullable=True)
+    
+    # Простое поле для названия карты (для совместимости с текущим подходом)
+    card_type: Mapped[str] = mapped_column(String(50))  # Тип карты (profession, health, etc.)
+    card_name: Mapped[str] = mapped_column(String(255))  # Название/значение карты
+    
     # Поля для возможных переопределений значений из BunkerCardDefinition для конкретного игрока
     card_name_override: Mapped[str] = mapped_column(String(255), nullable=True)
     card_description_override: Mapped[str] = mapped_column(Text, nullable=True)

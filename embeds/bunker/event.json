@@ -1,20 +1,33 @@
-{
-    "title": "🎲 Случайное событие",
-    "description": "%eventDescription%",
-    "color": 16776960,
-    "fields": [
-        {
-            "name": "⚡ Эффект",
-            "value": "%eventEffect%",
-            "inline": false
-        },
-        {
-            "name": "⏰ Длительность",
-            "value": "Событие активно %duration% раундов",
-            "inline": false
+[
+    {
+        "title": "⚠️ СОБЫТИЕ В БУНКЕРЕ!",
+        "description": "**{eventName}**\n\n{eventDescription}",
+        "color": 16776960,
+        "fields": [
+            {
+                "name": "🔺 Уровень угрозы",
+                "value": "{eventSeverity}",
+                "inline": true
+            },
+            {
+                "name": "👨‍🔧 Требуются профессии",
+                "value": "{requiredProfessions}",
+                "inline": true
+            },
+            {
+                "name": "⚡ Последствия при игнорировании",
+                "value": "{consequences}",
+                "inline": false
+            },
+            {
+                "name": "🎯 Инициатор",
+                "value": "{triggeredBy}",
+                "inline": false
+            }
+        ],
+        "timestamp": true,
+        "footer": {
+            "text": "Событие может повлиять на выживание в бункере"
         }
-    ],
-    "footer": {
-        "text": "Событие может повлиять на ход игры"
     }
-} 
+] 
