@@ -24,26 +24,48 @@ def get_embeds(name: str, timestamps: Union[list[datetime], None] = None, **kwar
                             
                             if key == "author": 
                                 print(f"DEBUG -> Processing author: {value} (type: {type(value)})")
-                                if isinstance(value, dict):
-                                    name = value.get("name", discord.embeds.EmptyEmbed)
-                                    url = value.get("url", discord.embeds.EmptyEmbed)
-                                    icon_url = value.get("icon_url", discord.embeds.EmptyEmbed)
-                                    print(f"DEBUG -> Author dict values: name={name}, url={url}, icon_url={icon_url}")
-                                    new_embed.set_author(name=name, url=url, icon_url=icon_url)
-                                else:
-                                    print(f"DEBUG -> Author simple value: {value}")
-                                    new_embed.set_author(name=str(value))
+                                try:
+                                    if isinstance(value, dict):
+                                        name = value.get("name", discord.embeds.EmptyEmbed)
+                                        url = value.get("url", discord.embeds.EmptyEmbed)
+                                        icon_url = value.get("icon_url", discord.embeds.EmptyEmbed)
+                                        print(f"DEBUG -> Author dict values: name={name}, url={url}, icon_url={icon_url}")
+                                        try:
+                                            new_embed.set_author(name=name, url=url, icon_url=icon_url)
+                                            print("DEBUG -> Author set successfully")
+                                        except Exception as e:
+                                            print(f"DEBUG -> Error setting author: {str(e)}")
+                                    else:
+                                        print(f"DEBUG -> Author simple value: {value}")
+                                        try:
+                                            new_embed.set_author(name=str(value))
+                                            print("DEBUG -> Author set successfully")
+                                        except Exception as e:
+                                            print(f"DEBUG -> Error setting author: {str(e)}")
+                                except Exception as e:
+                                    print(f"DEBUG -> Error processing author: {str(e)}")
                             
                             elif key == "footer": 
                                 print(f"DEBUG -> Processing footer: {value} (type: {type(value)})")
-                                if isinstance(value, dict):
-                                    text = value.get("text", discord.embeds.EmptyEmbed)
-                                    icon_url = value.get("icon_url", discord.embeds.EmptyEmbed)
-                                    print(f"DEBUG -> Footer dict values: text={text}, icon_url={icon_url}")
-                                    new_embed.set_footer(text=text, icon_url=icon_url)
-                                else:
-                                    print(f"DEBUG -> Footer simple value: {value}")
-                                    new_embed.set_footer(text=str(value))
+                                try:
+                                    if isinstance(value, dict):
+                                        text = value.get("text", discord.embeds.EmptyEmbed)
+                                        icon_url = value.get("icon_url", discord.embeds.EmptyEmbed)
+                                        print(f"DEBUG -> Footer dict values: text={text}, icon_url={icon_url}")
+                                        try:
+                                            new_embed.set_footer(text=text, icon_url=icon_url)
+                                            print("DEBUG -> Footer set successfully")
+                                        except Exception as e:
+                                            print(f"DEBUG -> Error setting footer: {str(e)}")
+                                    else:
+                                        print(f"DEBUG -> Footer simple value: {value}")
+                                        try:
+                                            new_embed.set_footer(text=str(value))
+                                            print("DEBUG -> Footer set successfully")
+                                        except Exception as e:
+                                            print(f"DEBUG -> Error setting footer: {str(e)}")
+                                except Exception as e:
+                                    print(f"DEBUG -> Error processing footer: {str(e)}")
 
                             elif key == "fields":
                                 
@@ -57,13 +79,24 @@ def get_embeds(name: str, timestamps: Union[list[datetime], None] = None, **kwar
                             
                             elif key == "thumbnail": 
                                 print(f"DEBUG -> Processing thumbnail: {value} (type: {type(value)})")
-                                if isinstance(value, dict):
-                                    url = value.get("url", discord.embeds.EmptyEmbed)
-                                    print(f"DEBUG -> Thumbnail dict value: url={url}")
-                                    new_embed.set_thumbnail(url=url)
-                                else:
-                                    print(f"DEBUG -> Thumbnail simple value: {value}")
-                                    new_embed.set_thumbnail(url=str(value))
+                                try:
+                                    if isinstance(value, dict):
+                                        url = value.get("url", discord.embeds.EmptyEmbed)
+                                        print(f"DEBUG -> Thumbnail dict value: url={url}")
+                                        try:
+                                            new_embed.set_thumbnail(url=url)
+                                            print("DEBUG -> Thumbnail set successfully")
+                                        except Exception as e:
+                                            print(f"DEBUG -> Error setting thumbnail: {str(e)}")
+                                    else:
+                                        print(f"DEBUG -> Thumbnail simple value: {value}")
+                                        try:
+                                            new_embed.set_thumbnail(url=str(value))
+                                            print("DEBUG -> Thumbnail set successfully")
+                                        except Exception as e:
+                                            print(f"DEBUG -> Error setting thumbnail: {str(e)}")
+                                except Exception as e:
+                                    print(f"DEBUG -> Error processing thumbnail: {str(e)}")
 
                             elif key == "image": new_embed.set_image(url= value.get("url", discord.embeds.EmptyEmbed))
                             
