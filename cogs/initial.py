@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
 from typing import Union
-from database import get_async_session
-from models import TimeCounterLog, User, VoiceLogTypeENUM
+from utils.database import get_async_session
+from utils.models import TimeCounterLog, User, VoiceLogTypeENUM
 from sqlalchemy import select
 
 class InitialCog(discord.Cog):

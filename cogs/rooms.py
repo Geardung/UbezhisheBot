@@ -2,9 +2,9 @@ from datetime import datetime
 import discord
 from discord.ext import commands, tasks
 from typing import Union
-from database import get_async_session
-from models import PrivateActionTypeENUM, PrivateRoom, PrivateRoomLog, PrivateRoomMember, TimeCounterLog, TimeParse, User, VoiceLogTypeENUM
-from utils import get_embeds
+from utils.database import get_async_session
+from utils.models import PrivateActionTypeENUM, PrivateRoom, PrivateRoomLog, PrivateRoomMember, TimeCounterLog, TimeParse, User, VoiceLogTypeENUM
+from utils.embeds import get_embeds
 from sqlalchemy import select
 
 PRIVATE_CATEGORY = 1331257581255131167 # Категория где все войсы

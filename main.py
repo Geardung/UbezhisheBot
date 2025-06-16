@@ -1,6 +1,6 @@
 import discord
 
-from config import DISCORD_BOT_TOKEN
+from utils.config import DISCORD_BOT_TOKEN
 
 class UbezhisheBot(discord.bot.Bot):
     

@@ -2,9 +2,9 @@ from datetime import datetime
 import discord
 from discord.ext import commands, tasks
 from typing import Union
-from database import get_async_session
-from models import TimeCounterLog, TimeParse, User, VoiceLogTypeENUM
-from utils import get_embeds
+from utils.database import get_async_session
+from utils.models import TimeCounterLog, TimeParse, User, VoiceLogTypeENUM
+from utils.embeds import get_embeds
 from sqlalchemy import select
 
 class TimeCounterCog(discord.Cog):
@@ -129,6 +129,7 @@ class TimeCounterCog(discord.Cog):
     time_spend_subgroup = time_group.create_subgroup("spend")
     
     @time_spend_subgroup.command(name="count") # Команда для всех, чтобы можно было посмотреть текущее время
+    @commands.command("online")
     async def time_spend_count_command(self, 
                                        ctx: discord.ApplicationContext,
                                        member: discord.Member = None):

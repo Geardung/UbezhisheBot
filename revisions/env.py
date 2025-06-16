@@ -11,7 +11,7 @@ config = context.config
 
 section = config.config_ini_section
 
-from config import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
+from utils.config import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
 
 config.set_section_option(section, "DB_USER", DB_USER) # подгрузка из .env
 config.set_section_option(section, "DB_PASSWORD", DB_PASSWORD) # подгрузка из .env
@@ -29,7 +29,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 
-from models import metadata
+from utils.models import metadata
 
 target_metadata = metadata
 

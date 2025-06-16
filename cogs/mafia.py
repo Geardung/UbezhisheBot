@@ -2,12 +2,12 @@ from datetime import datetime, timedelta
 import discord
 from discord.ext import commands, tasks
 from typing import Union, Optional
-from database import get_async_session
-from models import (
+from utils.database import get_async_session
+from utils.models import (
     MafiaGame, MafiaPlayer, MafiaRole, MafiaGameLog, MafiaRoleSetting,
     MafiaGameStatusENUM, MafiaTeamENUM, MafiaActionTypeENUM, User
 )
-from utils import get_embeds
+from utils.embeds import get_embeds
 from sqlalchemy import select, and_, or_
 import random
 import asyncio
