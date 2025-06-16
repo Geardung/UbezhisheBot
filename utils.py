@@ -23,20 +23,26 @@ def get_embeds(name: str, timestamps: Union[list[datetime], None] = None, **kwar
                         try:
                             
                             if key == "author": 
+                                print(f"DEBUG -> Processing author: {value} (type: {type(value)})")
                                 if isinstance(value, dict):
                                     name = value.get("name", discord.embeds.EmptyEmbed)
                                     url = value.get("url", discord.embeds.EmptyEmbed)
                                     icon_url = value.get("icon_url", discord.embeds.EmptyEmbed)
+                                    print(f"DEBUG -> Author dict values: name={name}, url={url}, icon_url={icon_url}")
                                     new_embed.set_author(name=name, url=url, icon_url=icon_url)
                                 else:
+                                    print(f"DEBUG -> Author simple value: {value}")
                                     new_embed.set_author(name=str(value))
                             
                             elif key == "footer": 
+                                print(f"DEBUG -> Processing footer: {value} (type: {type(value)})")
                                 if isinstance(value, dict):
                                     text = value.get("text", discord.embeds.EmptyEmbed)
                                     icon_url = value.get("icon_url", discord.embeds.EmptyEmbed)
+                                    print(f"DEBUG -> Footer dict values: text={text}, icon_url={icon_url}")
                                     new_embed.set_footer(text=text, icon_url=icon_url)
                                 else:
+                                    print(f"DEBUG -> Footer simple value: {value}")
                                     new_embed.set_footer(text=str(value))
 
                             elif key == "fields":
@@ -50,10 +56,13 @@ def get_embeds(name: str, timestamps: Union[list[datetime], None] = None, **kwar
                             elif key == "color": new_embed.color = discord.Colour(int(value.lstrip("#"), 16)) if value.get("color", False) else discord.Color.embed_background()
                             
                             elif key == "thumbnail": 
+                                print(f"DEBUG -> Processing thumbnail: {value} (type: {type(value)})")
                                 if isinstance(value, dict):
                                     url = value.get("url", discord.embeds.EmptyEmbed)
+                                    print(f"DEBUG -> Thumbnail dict value: url={url}")
                                     new_embed.set_thumbnail(url=url)
                                 else:
+                                    print(f"DEBUG -> Thumbnail simple value: {value}")
                                     new_embed.set_thumbnail(url=str(value))
 
                             elif key == "image": new_embed.set_image(url= value.get("url", discord.embeds.EmptyEmbed))
