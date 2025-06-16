@@ -1,3 +1,4 @@
+import os
 import discord
 
 from utils.config import DISCORD_BOT_TOKEN
@@ -15,18 +16,10 @@ if __name__ == "__main__":
     
     def register_cogs():
         
-        # TODO Заполнять Коги сюда
-        from cogs.timecounter import TimeCounterCog
-        from cogs.initial import InitialCog
-        from cogs.rooms import RoomsCog
-        from cogs.mafia import MafiaCog
-        from cogs.bunker import BunkerCog
-        
-        for cog in [TimeCounterCog, InitialCog, RoomsCog, MafiaCog, BunkerCog]: bot.add_cog(cog(bot))
-    
-    
-    
-    
+        cogs_list = [_[:-3] for _ in os.listdir("./cogs") if _.endswith(".py")]
+
+        for cog in cogs_list:
+            bot.load_extension(f'cogs.{cog}')
     
     
     
