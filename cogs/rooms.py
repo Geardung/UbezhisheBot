@@ -118,9 +118,12 @@ class CreateProcessView(discord.ui.View):
             # Создаем роль с цветом и иконкой
             role = await guild.create_role(
                 name=self.children[0].value,
-                color=discord.Color(color),
-                display_icon=self.children[1].value if self.children[1].value else None
+                colour=discord.Color(color)
             )
+            
+            # Если есть иконка, устанавливаем её отдельно
+            if self.children[1].value:
+                await role.edit(icon=self.children[1].value)
             
             member = await guild.fetch_member(interaction.user.id)
             
