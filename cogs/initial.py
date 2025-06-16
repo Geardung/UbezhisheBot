@@ -35,4 +35,7 @@ class InitialCog(discord.Cog):
             
         await session.commit()
         
-    
+
+
+def setup(bot): # this is called by Pycord to setup the cog
+    bot.add_cog(InitialCog(bot)) # add the cog to the bot

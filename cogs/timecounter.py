@@ -248,3 +248,7 @@ class TimeCounterCog(discord.Cog):
         
         await session.commit()
         await session.close()
+    
+
+def setup(bot): # this is called by Pycord to setup the cog
+    bot.add_cog(TimeCounterCog(bot)) # add the cog to the bot

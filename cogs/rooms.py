@@ -956,3 +956,7 @@ class RoomsCog(discord.Cog):
             return await ctx.followup.send(embeds=get_embeds("private/manage/no_rooms"), ephemeral=True)
         
         await ctx.followup.send(embeds=get_embeds("private/manage/menu/delete", room_name=private_room.label), ephemeral=True)
+
+
+def setup(bot): # this is called by Pycord to setup the cog
+    bot.add_cog(RoomsCog(bot)) # add the cog to the bot

@@ -869,4 +869,7 @@ class MafiaCog(discord.Cog):
         
         # Отправляем подтверждение
         await interaction.response.send_message("Ваш голос учтен!", ephemeral=True)
-        
+
+
+def setup(bot): # this is called by Pycord to setup the cog
+    bot.add_cog(MafiaCog(bot)) # add the cog to the bot

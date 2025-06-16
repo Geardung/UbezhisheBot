@@ -3204,5 +3204,5 @@ class BunkerCog(discord.Cog):
         await self.audio_manager.set_volume(100 / 100)
         await ctx.respond(f"✅ Громкость установлена на 100%!", ephemeral=True)
 
-async def setup(bot):
+async def setup(bot): 
     await bot.add_cog(BunkerCog(bot)) 
