@@ -275,13 +275,14 @@ class TimeCounterCog(discord.Cog):
         # Формируем топ-10
         top_users = []
         for user_id, time in sorted_users[:10]:
-            member = ctx.guild.get_member(user_id)
+            member:discord.Member = ctx.guild.get_member(user_id)
             if member:
+                
                 days = time // 86400
                 hours = (time % 86400) // 3600
                 minutes = (time % 3600) // 60
                 time_str = f"{days}д {hours}ч {minutes}м"
-                top_users.append((member.display_name, time_str))
+                top_users.append((member.mention , time_str))
         
         # Создаем эмбед
         embed = discord.Embed(
