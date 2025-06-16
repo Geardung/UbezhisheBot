@@ -17,9 +17,43 @@ class TimeCounterCog(discord.Cog):
         
         super().__init__()
     
-    
+    async def initialize_voice_users(self):
+        """Инициализация пользователей, находящихся в голосовых каналах при запуске бота"""
+        session = get_async_session()
+        current_time = int(datetime.now().timestamp())
+        
+        # Сначала создаем логи выхода для всех пользователей
+        for guild in self.bot.guilds:
+            for channel in guild.voice_channels:
+                if channel.id == 1314291685538271333:  # Пропускаем AFK канал
+                    continue
+                    
+                for member in channel.members:
+                    if member.bot:
+                        continue
+                        
+                    # Создаем лог выхода с текущим временем
+                    session.add(TimeCounterLog(
+                        user_id=member.id,
+                        log_type=VoiceLogTypeENUM.exit,
+                        channel_id=channel.id,
+                        timestamp=current_time
+                    ))
+                    # Создаем лог входа с текущим временем
+                    session.add(TimeCounterLog(
+                        user_id=member.id,
+                        log_type=VoiceLogTypeENUM.enter,
+                        channel_id=channel.id,
+                        timestamp=current_time
+                    ))
+        
+        await session.commit()
+        await session.close()
+
     async def parse_time_counters(self):
         session = get_async_session()
+        
+        await self.initialize_voice_users()
         
         _ = TimeParse()
         session.add(_)
@@ -90,7 +124,6 @@ class TimeCounterCog(discord.Cog):
     
     @tasks.loop(minutes=10)
     async def parsing_loop(self): await self.parse_time_counters()
-        
     
     time_group = discord.SlashCommandGroup("time")
     time_spend_subgroup = time_group.create_subgroup("spend")
