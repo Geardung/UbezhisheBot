@@ -112,11 +112,11 @@ class TimeCounterCog(discord.Cog):
         hours = (user.time_spended_summary % 86400) // 3600
         minutes = (user.time_spended_summary % 3600) // 60
         
-        await ctx.respond(embeds=get_embeds("timecounter\spend",
+        await ctx.respond(embeds=get_embeds("timecounter/spend",
                                             [datetime.fromtimestamp(float(timeparse.timestamp_start))],
                                             user_name=ctx.interaction.user.display_name if not member else member.display_name, 
                                             time_spended_str=f"{days} дней {hours} часов {minutes} минут",
-                                            member_img_url=ctx.interaction.user.display_avatar.url if not member else member.guild_avatar.url,
+                                            member_img_url=(member.guild_avatar.url if member.guild_avatar else "https://www.kino-teatr.ru/acter/album/7517/804691.jpg") if member else ctx.interaction.user.display_avatar.url,
                           ))
         
         await session.close()
