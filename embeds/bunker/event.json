@@ -1,33 +1,35 @@
-[
-    {
-        "title": "⚠️ СОБЫТИЕ В БУНКЕРЕ!",
-        "description": "**{eventName}**\n\n{eventDescription}",
-        "color": 16776960,
-        "fields": [
-            {
-                "name": "🔺 Уровень угрозы",
-                "value": "{eventSeverity}",
-                "inline": true
-            },
-            {
-                "name": "👨‍🔧 Требуются профессии",
-                "value": "{requiredProfessions}",
-                "inline": true
-            },
-            {
-                "name": "⚡ Последствия при игнорировании",
-                "value": "{consequences}",
-                "inline": false
-            },
-            {
-                "name": "🎯 Инициатор",
-                "value": "{triggeredBy}",
-                "inline": false
+{
+    "embeds": [
+        {
+            "title": "⚠️ СОБЫТИЕ В БУНКЕРЕ!",
+            "description": "**%eventName%**\n\n%eventDescription%",
+            "color": 16776960,
+            "fields": [
+                {
+                    "name": "🔺 Уровень угрозы",
+                    "value": "%eventSeverity%",
+                    "inline": true
+                },
+                {
+                    "name": "👨‍🔧 Требуются профессии",
+                    "value": "%requiredProfessions%",
+                    "inline": true
+                },
+                {
+                    "name": "⚡ Последствия при игнорировании",
+                    "value": "%consequences%",
+                    "inline": false
+                },
+                {
+                    "name": "🎯 Инициатор",
+                    "value": "%triggeredBy%",
+                    "inline": false
+                }
+            ],
+            "timestamp": true,
+            "footer": {
+                "text": "Событие может повлиять на выживание в бункере"
             }
-        ],
-        "timestamp": true,
-        "footer": {
-            "text": "Событие может повлиять на выживание в бункере"
         }
-    }
-] 
+    ]
+} 

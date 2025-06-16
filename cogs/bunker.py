@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from discord import app_commands
 from discord.ui import Button, View
 import asyncio
 import random
@@ -363,31 +362,33 @@ STANDARD_BUNKER_ROOMS = [
 
 def generate_player_cards(allow_hidden_roles: bool = True) -> Dict[str, str]:
     """Генерирует набор карт для игрока"""
-    gender = random.choice(["Мужской", "Женский"])
-    age = random.randint(18, 65)
-    
-    # Генерируем ФИО в зависимости от пола
-    if gender == "Мужской":
-        full_name = fake.name_male()
-    else:
-        full_name = fake.name_female()
-    
     cards = {
         "profession": random.choice(PROFESSIONS),
         "health": random.choice(HEALTH_STATUSES),
-        "age": str(age),
-        "gender": gender,
-        "full_name": full_name,
+        "age": str(random.randint(18, 65)),
+        "gender": random.choice(GENDERS),
+        "full_name": faker.name(),
         "skill": random.choice(SKILLS),
         "baggage": random.choice(BAGGAGE),
         "phobia": random.choice(PHOBIAS),
         "additional_info": random.choice(ADDITIONAL_INFO),
-        "hidden_role": "Нет" # По умолчанию нет скрытой роли
+        "is_revealed": {
+            "profession": False,
+            "health": False,
+            "age": False,
+            "gender": False,
+            "full_name": False,
+            "skill": False,
+            "baggage": False,
+            "phobia": False,
+            "additional_info": False
+        }
     }
-
-    if allow_hidden_roles and random.random() < 0.3: # 30% шанс получить скрытую роль
-        cards["hidden_role"] = random.choice(HIDDEN_ROLES)
     
+    if allow_hidden_roles:
+        cards["hidden_role"] = random.choice(HIDDEN_ROLES)
+        cards["is_revealed"]["hidden_role"] = False
+        
     return cards
 
 def generate_action_card() -> str:
@@ -1312,17 +1313,11 @@ class BunkerCog(discord.Cog):
     audio_group = bunker_group.create_subgroup("audio", "Команды управления звуком")
     
     @bunker_group.command(name="create")
-    @app_commands.describe(
-        capacity="Вместимость бункера (по умолчанию 10)",
-        catastrophe="Тип катастрофы (по умолчанию случайная)",
-        action_cards="Выдавать ли карты действий игрокам (по умолчанию True)",
-        events="Включить ли случайные события в бункере (по умолчанию True)"
-    )
     async def bunker_create(self, ctx: discord.ApplicationContext, 
-                           capacity: Optional[int] = 10, 
-                           catastrophe: Optional[str] = None,
-                           action_cards: Optional[bool] = True,
-                           events: Optional[bool] = True):
+                           capacity: int = 10, 
+                           catastrophe: str = None,
+                           action_cards: bool = True,
+                           events: bool = True):
         """Создать новую игру Бункер"""
         await ctx.defer(ephemeral=True)
         
@@ -1598,14 +1593,11 @@ class BunkerCog(discord.Cog):
             
             # Раздаем карты каждому игроку
             for player in players:
-                user = self.bot.get_user(player.user_id)
-                if not user:
+                if player.user_id == game.leader_id:  # Пропускаем ведущего
                     continue
-                
+                    
                 # Генерируем карты для игрока
-                cards = generate_player_cards(
-                    allow_hidden_roles=game.game_settings.get("allow_hidden_roles", True)
-                )
+                cards = generate_player_cards(allow_hidden_roles=game.game_settings.get("allow_hidden_roles", True))
                 
                 # Генерируем карту действия если включено
                 action_card = None
@@ -1636,7 +1628,7 @@ class BunkerCog(discord.Cog):
                 
                 # Отправляем карты игроку в ЛС с кнопками
                 embeds = get_embeds("bunker/player_cards_dm",
-                    playerName=user.display_name,
+                    playerName=player.user.display_name,
                     professionName=cards["profession"],
                     healthStatus=cards["health"],
                     age=cards["age"],
@@ -1650,7 +1642,7 @@ class BunkerCog(discord.Cog):
                     actionCard=action_card or "Нет"
                 )
                 try:
-                    dm_message = await user.send(embeds=embeds, view=card_reveal_view)
+                    dm_message = await player.user.send(embeds=embeds, view=card_reveal_view)
                     # Сохраняем ID сообщения с кнопками
                     player.dm_cards_message_id = dm_message.id
                     
@@ -1666,25 +1658,23 @@ class BunkerCog(discord.Cog):
                             value=ACTION_CARDS[action_card]["description"],
                             inline=False
                         )
-                        await user.send(embed=action_embed, view=action_card_view)
+                        await player.user.send(embed=action_embed, view=action_card_view)
                         
                 except discord.Forbidden:
-                    await announcements_channel.send(f"{user.mention}, я не могу отправить вам карты в личные сообщения! Пожалуйста, включите личные сообщения от участников сервера.")
+                    await announcements_channel.send(f"{player.user.mention}, я не могу отправить вам карты в личные сообщения! Пожалуйста, включите личные сообщения от участников сервера.")
                 
                 # Создаем эмбед с картами игрока в канале карт
                 embeds = get_embeds("bunker/player_card",
-                    playerName=user.display_name,
-                    professionName=cards["profession"],
-                    healthStatus="Скрыто",
-                    age=cards["age"],
-                    gender=cards["gender"],
-                    fullName=cards["full_name"],
-                    skillName=cards["skill"],
-                    itemName=cards["baggage"],
-                    traitName="Скрыто",
-                    extraInfo="Скрыто",
-                    hiddenRole="Скрыто",
-                    actionCard="Есть карта действия" if action_card else "Нет карт действий"
+                    playerName=player.user.display_name,
+                    professionName=cards["profession"] if cards["is_revealed"]["profession"] else "Скрыто",
+                    healthStatus=cards["health"] if cards["is_revealed"]["health"] else "Скрыто",
+                    age=cards["age"] if cards["is_revealed"]["age"] else "Скрыто",
+                    gender=cards["gender"] if cards["is_revealed"]["gender"] else "Скрыто",
+                    fullName=cards["full_name"] if cards["is_revealed"]["full_name"] else "Скрыто",
+                    skillName=cards["skill"] if cards["is_revealed"]["skill"] else "Скрыто",
+                    itemName=cards["baggage"] if cards["is_revealed"]["baggage"] else "Скрыто",
+                    traitName=cards["phobia"] if cards["is_revealed"]["phobia"] else "Скрыто",
+                    extraInfo=cards["additional_info"] if cards["is_revealed"]["additional_info"] else "Скрыто"
                 )
                 message = await player_cards_channel.send(embeds=embeds)
                 
@@ -1692,10 +1682,19 @@ class BunkerCog(discord.Cog):
                 player.cards_message_id = message.id
                 
                 # Меняем никнейм игрока
-                try:
-                    await user.edit(nick=f"Игрок №{player.id}")
-                except discord.Forbidden:
-                    await announcements_channel.send(f"Я не могу изменить никнейм {user.mention}. Пожалуйста, дайте мне права на управление никнеймами.")
+                guild = self.bot.get_guild(game.guild_id)
+                if guild:
+                    try:
+                        member = await guild.fetch_member(player.user_id)
+                        await member.edit(nick=f"Игрок №{player.id}")
+                    except discord.Forbidden:
+                        await announcements_channel.send(
+                            f"Я не могу изменить никнейм {player.user.mention}. Возможно, у меня нет прав или у пользователя слишком высокая роль."
+                        )
+                    except discord.HTTPException:
+                        logger.warning(f"Не удалось изменить никнейм для пользователя {player.user_id}")
+                else:
+                    logger.warning(f"Не удалось получить Guild для id {game.guild_id}")
             
             await session.commit()
             
@@ -1723,11 +1722,17 @@ class BunkerCog(discord.Cog):
                 action_details={"players_count": len(players)}
             )
             session.add(log)
+            
+            # Меняем статус игры на RUNNING
+            game.status = BunkerGameStatusENUM.RUNNING.value
+            
             await session.commit()
             
             # Воспроизводим звук катастрофы и закрытия бункера
-            await self.audio_manager.play_catastrophe_sound(game.id, game.catastrophe)
+            await self.audio_manager.play_catastrophe_sound(game.id, game.catastrophe_type)
+            await asyncio.sleep(2)  # Ждем 2 секунды
             await self.audio_manager.play_sound(game.id, "bunker_close")
+            await asyncio.sleep(1)  # Ждем 1 секунду
             await self.audio_manager.play_background_music(game.id, "bunker_ambient")
 
     @leader_group.command(name="start")
@@ -1758,9 +1763,9 @@ class BunkerCog(discord.Cog):
             )
             players = players.scalars().all()
             
-            if len(players) < 3:
-                await ctx.followup.send("Для начала игры нужно минимум 3 игрока!", ephemeral=True)
-                return
+            #if len(players) < 3:
+            #    await ctx.followup.send("Для начала игры нужно минимум 3 игрока!", ephemeral=True)
+            #    return
             
             # Запускаем игру
             await self.start_game(game)
@@ -3189,7 +3194,6 @@ class BunkerCog(discord.Cog):
         
     @audio_group.command(name="volume")
     async def audio_volume(self, ctx: discord.ApplicationContext, 
-                          volume: int = discord.Option(description="Громкость (0-100)", min_value=0, max_value=100),
                           game_id: Optional[int] = None):
         """Установить громкость"""
         if game_id and game_id not in self.active_games:
@@ -3197,8 +3201,8 @@ class BunkerCog(discord.Cog):
             return
             
         game = self.active_games.get(game_id) if game_id else None
-        await self.audio_manager.set_volume(volume / 100)
-        await ctx.respond(f"✅ Громкость установлена на {volume}%!", ephemeral=True)
+        await self.audio_manager.set_volume(100 / 100)
+        await ctx.respond(f"✅ Громкость установлена на 100%!", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(BunkerCog(bot)) 

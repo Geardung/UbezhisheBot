@@ -25,7 +25,9 @@ class BunkerAudioManager:
         self.sounds = {
             # Атмосферная музыка
             "lobby_music": "sounds/bunker/lobby_ambient.mp3",
+            "lobby_ambient": "sounds/bunker/lobby_ambient.mp3",  # алиас для совместимости
             "game_music": "sounds/bunker/bunker_ambient.mp3",
+            "bunker_ambient": "sounds/bunker/bunker_ambient.mp3",
             "tension_music": "sounds/bunker/tension.mp3",
             "victory_music": "sounds/bunker/victory.mp3",
             "defeat_music": "sounds/bunker/defeat.mp3",
@@ -47,11 +49,31 @@ class BunkerAudioManager:
             "player_joined": "sounds/bunker/footsteps.mp3",
             "round_start": "sounds/bunker/countdown.mp3",
             "game_start": "sounds/bunker/bunker_close.mp3",
+            "bunker_close": "sounds/bunker/bunker_close.mp3",
             
             # Голосовые уведомления
             "welcome": "sounds/bunker/voice/welcome.mp3",
-            "catastrophe_announce": "sounds/bunker/voice/catastrophe.mp3",
             "voting_time": "sounds/bunker/voice/voting.mp3",
+            
+            # Звуки катастроф (голосовые)
+            "voice/lethal-virus": "sounds/bunker/voice/lethal-virus.ogg.mp3",
+            "voice/zombie-virus": "sounds/bunker/voice/zombie-virus.ogg.mp3",
+            "voice/one-day-before-nuclear-war": "sounds/bunker/voice/one-day-before-nuclear-war.ogg.mp3",
+            "voice/nuclear-winter": "sounds/bunker/voice/nuclear-winter.ogg.mp3",
+            "voice/ocean-contamination": "sounds/bunker/voice/ocean-contamination.ogg.mp3",
+            "voice/climate-catastrophe": "sounds/bunker/voice/climate-catastrophe.ogg.mp3",
+            "voice/global-warming": "sounds/bunker/voice/global-warming.ogg.mp3",
+            "voice/alien-attack": "sounds/bunker/voice/alien-attack.ogg.mp3",
+            "voice/lunar-destroy": "sounds/bunker/voice/lunar-destroy.ogg.mp3",
+            "voice/solar-superstorm": "sounds/bunker/voice/solar-superstorm.ogg.mp3",
+            "voice/uncontrollable-nanorobots": "sounds/bunker/voice/uncontrollable-nanorobots.ogg.mp3",
+            "voice/digital-mind-control": "sounds/bunker/voice/digital-mind-control.ogg.mp3",
+            "voice/grand-oil-crisis": "sounds/bunker/voice/grand-oil-crisis.ogg.mp3",
+            "voice/volcano-awakening": "sounds/bunker/voice/volcano-awakening.ogg.mp3",
+            "voice/mysterious-mirages": "sounds/bunker/voice/mysterious-mirages.ogg.mp3",
+            "voice/borehole-to-hell": "sounds/bunker/voice/borehole-to-hell.ogg.mp3",
+            "voice/planet-cleaning": "sounds/bunker/voice/planet-cleaning.ogg.mp3",
+            "voice/zero-polarity": "sounds/bunker/voice/zero-polarity.ogg.mp3"
         }
     
     async def connect_to_voice(self, game_id: int, voice_channel) -> bool:
@@ -104,7 +126,7 @@ class BunkerAudioManager:
             # Останавливаем текущее воспроизведение если есть
             if voice_client.is_playing():
                 voice_client.stop()
-                await asyncio.sleep(0.1)  # Небольшая пауза
+                await asyncio.sleep(0.8)  # Небольшая пауза
             
             # Определяем громкость
             if volume is None:
@@ -134,6 +156,13 @@ class BunkerAudioManager:
         """Воспроизводит фоновую музыку"""
         if not self.audio_settings["background_music"]:
             return
+            
+        # Останавливаем текущую музыку если есть
+        if game_id in self.voice_clients:
+            voice_client = self.voice_clients[game_id]
+            if voice_client.is_playing():
+                voice_client.stop()
+                await asyncio.sleep(0.8)  # Небольшая пауза
         
         await self.play_sound(game_id, music_key, volume=0.2)  # Тише для фона
         
@@ -221,7 +250,7 @@ class BunkerAudioManager:
             "Нулевая полярность": "voice/zero-polarity"
         }
         
-        sound_key = sound_map.get(catastrophe_type, "voice/catastrophe")  # Дефолтный звук, если тип не найден
+        sound_key = sound_map.get(catastrophe_type, "nuclear_alarm")  # Используем существующий звук как дефолтный
         await self.play_sound(game_id, sound_key, volume=0.8, wait_finish=True)
         logger.info(f"🚨 Воспроизведен голос катастрофы: {catastrophe_type} -> {sound_key}")
     
