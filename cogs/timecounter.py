@@ -128,9 +128,8 @@ class TimeCounterCog(discord.Cog):
     time_group = discord.SlashCommandGroup("time")
     time_spend_subgroup = time_group.create_subgroup("spend")
     
-    @time_spend_subgroup.command(name="count") # Команда для всех, чтобы можно было посмотреть текущее время
+    #@time_spend_subgroup.command(name="count") # Команда для всех, чтобы можно было посмотреть текущее время
     @discord.command(name="online", description="Показать время, проведенное в голосовых каналах")
-    @discord.command(name="онлайн", description="Показать время, проведенное в голосовых каналах")
     async def time_spend_count_command(self, 
                                        ctx: discord.ApplicationContext,
                                        member: discord.Member = None):
@@ -213,6 +212,91 @@ class TimeCounterCog(discord.Cog):
         user.time_spended_summary += count
         
         await session.commit()
+        await session.close()
+    
+    @time_spend_subgroup.command(name="top", description="Показать топ игроков по времени в голосовых каналах")
+    async def time_spend_top_command(self,
+                                    ctx: discord.ApplicationContext,
+                                    period: str = discord.Option(description="Период времени", choices=["3 дня", "7 дней", "30 дней"], default="7 дней")):
+        
+        session = get_async_session()
+        
+        # Определяем timestamp для начала периода
+        current_time = int(datetime.now().timestamp())
+        if period == "3 дня":
+            start_time = current_time - (3 * 24 * 3600)
+        elif period == "7 дней":
+            start_time = current_time - (7 * 24 * 3600)
+        else:  # 30 дней
+            start_time = current_time - (30 * 24 * 3600)
+        
+        # Получаем все логи за период
+        logs = (await session.execute(
+            select(TimeCounterLog)
+            .where(TimeCounterLog.timestamp >= start_time)
+            .order_by(TimeCounterLog.timestamp)
+        )).scalars().all()
+        
+        # Группируем логи по пользователям
+        user_times = {}
+        for log in logs:
+            if log.user_id not in user_times:
+                user_times[log.user_id] = []
+            user_times[log.user_id].append(log)
+        
+        # Вычисляем время для каждого пользователя
+        user_total_times = {}
+        for user_id, user_logs in user_times.items():
+            total_time = 0
+            i = 0
+            while i < len(user_logs):
+                current_log = user_logs[i]
+                
+                if current_log.log_type == VoiceLogTypeENUM.enter:
+                    next_exit = None
+                    for j in range(i + 1, len(user_logs)):
+                        if user_logs[j].user_id == user_id and user_logs[j].log_type == VoiceLogTypeENUM.exit:
+                            next_exit = user_logs[j]
+                            break
+                    
+                    if next_exit:
+                        time_spent = next_exit.timestamp - current_log.timestamp
+                        if time_spent > 0:
+                            total_time += time_spent
+                        i = j + 1
+                        continue
+                i += 1
+            
+            user_total_times[user_id] = total_time
+        
+        # Сортируем пользователей по времени
+        sorted_users = sorted(user_total_times.items(), key=lambda x: x[1], reverse=True)
+        
+        # Формируем топ-10
+        top_users = []
+        for user_id, time in sorted_users[:10]:
+            member = ctx.guild.get_member(user_id)
+            if member:
+                days = time // 86400
+                hours = (time % 86400) // 3600
+                minutes = (time % 3600) // 60
+                time_str = f"{days}д {hours}ч {minutes}м"
+                top_users.append((member.display_name, time_str))
+        
+        # Создаем эмбед
+        embed = discord.Embed(
+            title=f"♂️ Топ-10 по онлайну за {period} ♂️",
+            color=discord.Color.blue()
+        )
+        
+        for i, (name, time) in enumerate(top_users, 1):
+            embed.add_field(
+                name=f"#{i} {name}",
+                value=time,
+                inline=False
+            )
+        
+        await ctx.respond(embed=embed)
         await session.close()
     
     @commands.Cog.listener()
