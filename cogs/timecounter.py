@@ -128,7 +128,8 @@ class TimeCounterCog(discord.Cog):
     time_group = discord.SlashCommandGroup("time")
     time_spend_subgroup = time_group.create_subgroup("spend")
     
-    @time_spend_subgroup.command(name="count") # Команда для всех, чтобы можно было посмотреть текущее время
+    #@time_spend_subgroup.command(name="count") # Команда для всех, чтобы можно было посмотреть текущее время
+    @commands.command(name="online")
     async def time_spend_count_command(self, 
                                        ctx: discord.ApplicationContext,
                                        member: discord.Member = None):
