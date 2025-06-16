@@ -1,0 +1,32 @@
+{
+  "embeds": [
+    {
+      "title": "💀 Игрок покинул город",
+      "description": "%playerName% был исключен из игры!",
+      "color": "#7F8C8D",
+      "fields": [
+        {
+          "name": "🎭 Роль игрока",
+          "value": "%playerRole%",
+          "inline": true
+        },
+        {
+          "name": "🎴 Команда",
+          "value": "%playerTeam%",
+          "inline": true
+        },
+        {
+          "name": "📝 Причина",
+          "value": "%deathReason%",
+          "inline": false
+        }
+      ],
+      "thumbnail": {
+        "url": "%playerAvatarUrl%"
+      },
+      "footer": {
+        "text": "Покойся с миром... или присоединяйся к призракам!"
+      }
+    }
+  ]
+} 

@@ -1,0 +1,69 @@
+{
+    "embeds": [
+        {
+            "title": "🎴 Карточка игрока %playerName%",
+            "description": "Известная информация о персонаже",
+            "color": 3447003,
+            "fields": [
+                {
+                    "name": "👨‍💼 Профессия",
+                    "value": "**%professionName%**",
+                    "inline": true
+                },
+                {
+                    "name": "❤️ Здоровье",
+                    "value": "**%healthStatus%**",
+                    "inline": true
+                },
+                {
+                    "name": "🎂 Возраст",
+                    "value": "**%age% лет**",
+                    "inline": true
+                },
+                {
+                    "name": "⚧️ Пол",
+                    "value": "**%gender%**",
+                    "inline": true
+                },
+                {
+                    "name": "📛 Имя",
+                    "value": "**%fullName%**",
+                    "inline": true
+                },
+                {
+                    "name": "🛠️ Навык",
+                    "value": "**%skillName%**",
+                    "inline": true
+                },
+                {
+                    "name": "🎒 Багаж",
+                    "value": "**%itemName%**",
+                    "inline": true
+                },
+                {
+                    "name": "👻 Фобия",
+                    "value": "**%traitName%**",
+                    "inline": true
+                },
+                {
+                    "name": "📜 Доп. информация",
+                    "value": "**%extraInfo%**",
+                    "inline": true
+                },
+                {
+                    "name": "🎭 Скрытая роль",
+                    "value": "**%hiddenRole%**",
+                    "inline": false
+                },
+                {
+                    "name": "🪄 Карты действий",
+                    "value": "**%actionCard%**",
+                    "inline": false
+                }
+            ],
+            "footer": {
+                "text": "Публичная информация • Некоторые карты могут быть скрыты"
+            }
+        }
+    ]
+} 

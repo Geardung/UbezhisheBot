@@ -1,0 +1,32 @@
+{
+  "embeds": [
+    {
+      "title": "✨ Твоя роль в этой игре, %playerName%! ✨",
+      "description": "Тебе досталась роль: **%roleName%**!",
+      "color": "%roleColor%",
+      "fields": [
+        {
+          "name": "🎴 Команда",
+          "value": "%teamName%",
+          "inline": true
+        },
+        {
+          "name": "📜 Описание роли",
+          "value": "%roleDescription%",
+          "inline": false
+        },
+        {
+          "name": "🎯 Способности",
+          "value": "%roleAbilities%",
+          "inline": false
+        }
+      ],
+      "thumbnail": {
+        "url": "%roleIconUrl%"
+      },
+      "footer": {
+        "text": "Удачи в игре! Используй свои способности с умом. 🤫"
+      }
+    }
+  ]
+} 
