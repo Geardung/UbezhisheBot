@@ -1,2 +1,9 @@
 py-cord
 PyNaCl
+discord.py
+sqlalchemy
+asyncpg
+alembic
+faker
+psycopg2-binary
+alembic
