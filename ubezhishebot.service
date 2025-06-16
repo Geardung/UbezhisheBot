@@ -1,0 +1,17 @@
+[Unit]
+Description=♂️DUNGEON MASTER♂️ UbezhisheBot Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/e/projects/geardung/UbezhisheBot
+ExecStart=/usr/bin/python3 main.py
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=ubezhishebot
+
+[Install]
+WantedBy=multi-user.target 
