@@ -26,9 +26,9 @@ def get_embeds(name: str, timestamps: Union[list[datetime], None] = None, **kwar
                                 print(f"DEBUG -> Processing author: {value} (type: {type(value)})")
                                 try:
                                     if isinstance(value, dict):
-                                        name = value.get("name", discord.embeds.EmptyEmbed)
-                                        url = value.get("url", discord.embeds.EmptyEmbed)
-                                        icon_url = value.get("icon_url", discord.embeds.EmptyEmbed)
+                                        name = value.get("name", discord.Embed.Empty)
+                                        url = value.get("url", discord.Embed.Empty)
+                                        icon_url = value.get("icon_url", discord.Embed.Empty)
                                         print(f"DEBUG -> Author dict values: name={name}, url={url}, icon_url={icon_url}")
                                         try:
                                             new_embed.set_author(name=name, url=url, icon_url=icon_url)
@@ -49,8 +49,8 @@ def get_embeds(name: str, timestamps: Union[list[datetime], None] = None, **kwar
                                 print(f"DEBUG -> Processing footer: {value} (type: {type(value)})")
                                 try:
                                     if isinstance(value, dict):
-                                        text = value.get("text", discord.embeds.EmptyEmbed)
-                                        icon_url = value.get("icon_url", discord.embeds.EmptyEmbed)
+                                        text = value.get("text", discord.Embed.Empty)
+                                        icon_url = value.get("icon_url", discord.Embed.Empty)
                                         print(f"DEBUG -> Footer dict values: text={text}, icon_url={icon_url}")
                                         try:
                                             new_embed.set_footer(text=text, icon_url=icon_url)
@@ -71,8 +71,8 @@ def get_embeds(name: str, timestamps: Union[list[datetime], None] = None, **kwar
                                 
                                 for field in value:
                                     
-                                    new_embed.add_field(name= field.get("name", discord.embeds.EmptyEmbed), 
-                                                        value= field.get("value", discord.embeds.EmptyEmbed), 
+                                    new_embed.add_field(name= field.get("name", discord.Embed.Empty), 
+                                                        value= field.get("value", discord.Embed.Empty), 
                                                         inline= field.get("inline", False))
 
                             elif key == "color": new_embed.color = discord.Colour(int(value.lstrip("#"), 16)) if value.get("color", False) else discord.Color.embed_background()
@@ -81,7 +81,7 @@ def get_embeds(name: str, timestamps: Union[list[datetime], None] = None, **kwar
                                 print(f"DEBUG -> Processing thumbnail: {value} (type: {type(value)})")
                                 try:
                                     if isinstance(value, dict):
-                                        url = value.get("url", discord.embeds.EmptyEmbed)
+                                        url = value.get("url", discord.Embed.Empty)
                                         print(f"DEBUG -> Thumbnail dict value: url={url}")
                                         try:
                                             new_embed.set_thumbnail(url=url)
@@ -98,11 +98,19 @@ def get_embeds(name: str, timestamps: Union[list[datetime], None] = None, **kwar
                                 except Exception as e:
                                     print(f"DEBUG -> Error processing thumbnail: {str(e)}")
 
-                            elif key == "image": new_embed.set_image(url= value.get("url", discord.embeds.EmptyEmbed))
+                            elif key == "image": 
+                                try:
+                                    if isinstance(value, dict):
+                                        url = value.get("url", discord.Embed.Empty)
+                                        new_embed.set_image(url=url)
+                                    else:
+                                        new_embed.set_image(url=str(value))
+                                except Exception as e:
+                                    print(f"DEBUG -> Error setting image: {str(e)}")
                             
                             elif key == "id": pass
                             
-                            else: setattr(new_embed, key, value or discord.embeds.EmptyEmbed)
+                            else: setattr(new_embed, key, value or discord.Embed.Empty)
                             
                         except:
                             print("ERROR -> ", key, value)
