@@ -42,7 +42,7 @@ class RoomInviteView(discord.ui.View):
                 session.add(room_member)
                 await session.commit()
                 
-                await interaction.message.edit(view=None, embeds=get_embeds("private\manage\menu\members\invitation_accepted"))
+                await interaction.message.edit(view=None, embeds=get_embeds("private/manage/menu/members/invitation_accepted"))
 
         def __init__(self):
             
@@ -724,10 +724,11 @@ class RoomsCog(discord.Cog):
                         category:discord.CategoryChannel = await self.bot.fetch_channel(PRIVATE_CATEGORY)
                         
                         
-                        overwr_dict = {member: discord.PermissionOverwrite(connect=True, 
-                                                                        #mute_members=True, # Под вопросом
-                                                                        #deafen_members=True, # Под вопросом
-                                                                        move_members=True,
+                        overwr_dict = {member: discord.PermissionOverwrite(
+                                                                            connect=True, 
+                                                                            #mute_members=True, # Под вопросом
+                                                                            #deafen_members=True, # Под вопросом
+                                                                            move_members=True,
                                                                             speak=True, 
                                                                             send_messages=True,
                                                                             stream=True,
@@ -738,10 +739,6 @@ class RoomsCog(discord.Cog):
                                                                             manage_webhooks=False,
                                                                             create_instant_invite=False,
                                                                             priority_speaker=True,
-                                                                            stream=True,
-                                                                            read_messages=True,
-                                                                            view_channel=True,
-                                                                            send_messages=True,
                                                                             send_tts_messages=True,
                                                                             manage_messages=True,
                                                                             embed_links=True,
@@ -750,8 +747,6 @@ class RoomsCog(discord.Cog):
                                                                             mention_everyo=True,
                                                                             external_emojis=True,
                                                                             use_external_emojis=True,
-                                                                            connect=True,
-                                                                            speak=True,
                                                                             mute_members=False,
                                                                             deafen_members=False,
                                                                             use_slash_commands=True,
