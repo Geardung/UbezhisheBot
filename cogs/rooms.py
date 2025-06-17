@@ -744,7 +744,7 @@ class RoomsCog(discord.Cog):
                                                                             embed_links=True,
                                                                             attach_files=True,
                                                                             read_message_history=True,
-                                                                            mention_everyo=True,
+                                                                            mention_everyone=True,
                                                                             external_emojis=True,
                                                                             use_external_emojis=True,
                                                                             mute_members=False,
